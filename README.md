@@ -69,7 +69,7 @@ bind = $MOD SHIFT ALT, R, exec, hyprcap -m active -m window
 bind = $MOD SHIFT CTRL, R, exec, hyprcap
 ```
 
-## Save location
+### Save location
 
 You can choose which directory HyprRe will save captures in by setting an
 `HYPRCAP_DIR` environment variable to your preferred location.
