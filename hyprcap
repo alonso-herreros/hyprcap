@@ -497,9 +497,9 @@ function parse_command() {
 }
 
 function parse_selection() {
-    local selection="$1"
+    local selection=
 
-    case "$selection" in
+    case "$1" in
         region*)
             ;; # Region is excluded with these options, must be used alone
         *:active)
