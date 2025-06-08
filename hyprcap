@@ -84,8 +84,8 @@ Notification options:
 
 Output options:
 ! -r, --raw                     Output raw capture data to stdout.
-! -V, --verbose                 Print extra information.
-! -q, --quiet                   Print less information.
+  -V, --verbose                 Print extra information.
+  -q, --quiet                   Print less information.
   -v, --version                 Show the version and exit.
   -h, --help                    Show this help message and exit.
 
@@ -105,10 +105,14 @@ function NYI() {
 }
 
 # TODO: Check this implementation
-# function Print() {
-#     [ "$1" ~= "-*" ] && local level="${1#-}" && shift
-#     [ $VERBOSE -ge ${$level:-1} ] && printf "$@" 1>&2
-# }
+function Print() {
+    # Sort of like an if with a string pattern match
+    case "$1" in -*)
+        local level=${1#-}
+        shift;;
+    esac
+    [ $VERBOSE -ge ${level:-0} ] && printf "$@" 1>&2
+}
 
 
 # =============== Main operations ===============
@@ -473,11 +477,9 @@ function args() {
                 ;;
             -V | --verbose)
                 VERBOSE=1
-                NYI && exit 1 # TODO: Remove when implemented
                 ;;
             -q | --quiet)
                 VERBOSE=-1
-                NYI && exit 1 # TODO: Remove when implemented
                 ;;
             -v | --version)
                 Version
@@ -530,10 +532,13 @@ function args() {
 # NOTIF_TIMEOUT=10000
 
 # Output
-# VERBOSE=0 # not implemented yet
+VERBOSE=0
 # RAW=0 # not implemented yet
 
 args $0 "$@"
+
+Print -1 "Running HyprCap version $VERSION\n"
+Print -1 "Command selected: $COMMAND\n"
 
 # startup
 
