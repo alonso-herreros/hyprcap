@@ -503,12 +503,12 @@ function parse_selection() {
         region*)
             ;; # Region is excluded with these options, must be used alone
         *:active)
-            ACTIVE=1
+            SELECT_ACTIVE=1
             selection="${1%:active}"
             ;;
         *:* | *:*)
-            SELECTION_OPTION="${1#*:}"
-            selection="${1%%:$SELECTION_OPTION}"
+            SELECT_MATCH="${1#*:}"
+            selection="${1%%:$SELECT_MATCH}"
             ;;
         *)
             selection="$1"
