@@ -491,7 +491,14 @@ function args() {
         esac
         shift
     done
+    shift # Remove the command itself from the arguments
 
+    # Check if a command was specified
+    if [ -z "$1" ]; then
+        echo "No command specified. Use --help for help."
+        exit 1
+    fi
+    COMMAND="$1" # TODO: Parse the command
 }
 
 # =============== Main flow ===============
@@ -527,8 +534,6 @@ function args() {
 # RAW=0 # not implemented yet
 
 args $0 "$@"
-
-[ -z $COMMAND ] && echo "No command specified. Use --help for help." && exit 1
 
 # startup
 
