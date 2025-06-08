@@ -111,6 +111,7 @@ function Print() {
         local level=${1#-}
         shift;;
     esac
+    [ "$level" == "E" ] && level=-1 # Error level
     [ $VERBOSE -ge ${level:-0} ] && printf "$@" 1>&2
 }
 
@@ -356,58 +357,7 @@ function Print() {
 #     echo "$box"
 # }
 
-# function prompt_options() {
-#     visible_windows=$(list_geometry)
-
-#     dmenu_text=$'Region\nActive monitor\nMonitor\nActive window\nWindow\n'
-#     dmenu_text+=$(echo $visible_windows | jq -r '"Window:\t\(.title)"')
-
-#     option_name=$(echo "$dmenu_text" | $DMENU_COMMAND)
-
-#     case "$option_name" in
-#         Active*) # Current monitor or window
-#             CURRENT=1
-#             ;;&
-#         *[Mm]onitor)
-#             OPTION=output
-#             ;;
-#         *[Ww]indow)
-#             OPTION=window
-#             ;;
-#         Region)
-#             OPTION=region
-#             ;;
-#         *)
-#             parse_mode "$option_name"
-#             ;;
-#     esac
-#     sleep 0.1; # Because sometimes it takes just a moment to fade out
-# }
-
-# function parse_mode() {
-#     local mode="${1}"
-
-#     case "$1" in
-#         active)
-#             CURRENT=1
-#             ;;
-#         window | region | output)
-#             OPTION="$1"
-#             ;;
-#         Window:*)
-#             OPTION=window
-#             SELECTED_WINDOW="$(echo "$1" | cut -f2)"
-#             ;;
-#         Monitor:*)
-#             OPTION=output
-#             SELECTED_MONITOR="$(echo "$1" | cut -f2)"
-#             ;;
-#         *)
-#             hyprctl monitors -j | jq -re '.[] | select(.name == "'$(echo "$1")'")' &>/dev/null
-#             SELECTED_MONITOR="$1"
-#             ;;
-#     esac
-# }
+# =============== Argument parsing ===============
 
 function args() {
     local OPTS="s:o:f:Fcd:znNaAt:rVqvh"
@@ -500,17 +450,82 @@ function args() {
         echo "No command specified. Use --help for help."
         exit 1
     fi
-    COMMAND="$1" # TODO: Parse the command
+    COMMAND=$(parse_command "$1")
 }
+
+function parse_command() {
+    case "$1" in
+        shot | screenshot)
+            echo "screenshot"
+            ;;
+        rec | record)
+            echo "record"
+            ;;
+        *)
+            Print -E "Fatal: Unknown command '$1'\n"
+            exit 1
+            ;;
+    esac
+}
+
+# function parse_mode() {
+#     local mode="${1}"
+
+#     case "$1" in
+#         active)
+#             CURRENT=1
+#             ;;
+#         window | region | output)
+#             OPTION="$1"
+#             ;;
+#         Window:*)
+#             OPTION=window
+#             SELECTED_WINDOW="$(echo "$1" | cut -f2)"
+#             ;;
+#         Monitor:*)
+#             OPTION=output
+#             SELECTED_MONITOR="$(echo "$1" | cut -f2)"
+#             ;;
+#         *)
+#             hyprctl monitors -j | jq -re '.[] | select(.name == "'$(echo "$1")'")' &>/dev/null
+#             SELECTED_MONITOR="$1"
+#             ;;
+#     esac
+# }
+
+# function prompt_options() {
+#     visible_windows=$(list_geometry)
+
+#     dmenu_text=$'Region\nActive monitor\nMonitor\nActive window\nWindow\n'
+#     dmenu_text+=$(echo $visible_windows | jq -r '"Window:\t\(.title)"')
+
+#     option_name=$(echo "$dmenu_text" | $DMENU_COMMAND)
+
+#     case "$option_name" in
+#         Active*) # Current monitor or window
+#             CURRENT=1
+#             ;;&
+#         *[Mm]onitor)
+#             OPTION=output
+#             ;;
+#         *[Ww]indow)
+#             OPTION=window
+#             ;;
+#         Region)
+#             OPTION=region
+#             ;;
+#         *)
+#             parse_mode "$option_name"
+#             ;;
+#     esac
+#     sleep 0.1; # Because sometimes it takes just a moment to fade out
+# }
 
 # =============== Main flow ===============
 
 # ---- Pre-init ----
 
 # ---- Options and defaults ----
-
-# Command
-# COMMAND=screenshot
 
 # Selection
 # SELECTION=
