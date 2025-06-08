@@ -500,8 +500,9 @@ function parse_selection() {
     local selection=
 
     case "$1" in
-        region*)
-            ;; # Region is excluded with these options, must be used alone
+        region:*) # Region may specify the geometry directly
+            selection="${1#region:}"
+            ;;
         *:active)
             SELECT_ACTIVE=1
             selection="${1%:active}"
@@ -518,6 +519,9 @@ function parse_selection() {
     case "$selection" in
         window | region | monitor)
             SELECTION="$selection"
+            ;;
+        *,*,*x*) # Geometry in the form X,Y,WxH: translate to X,Y WxH
+            SELECTION="${selection%,*} ${selection#*,*,}"
             ;;
         *)
             Print -E "Fatal: Unknown selection '$1'\n"
@@ -586,12 +590,13 @@ args $0 "$@"
 
 Print -1 "Running HyprCap version $VERSION\n"
 Print -1 "Command selected: $COMMAND\n"
-Print -1 "Selection: $SELECTION\n"
 
 # startup
 
 # [ -z $OPTION ] && prompt_options
 
+Print -1 "Selection: $SELECTION"
+Print -1 " (active: ${SELECT_ACTIVE:-no}, match: '$SELECT_MATCH')\n"
 
 # if [ -z "$XDG_PICTURES_DIR" ]; then
 #    type xdg-user-dir >/dev/null && XDG_PICTURES_DIR=$(xdg-user-dir PICTURES)
