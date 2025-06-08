@@ -77,6 +77,17 @@ You can choose which directory HyprRe will save captures in by setting an
 If `HYPRCAP_DIR` is not set, HyprCap will attempt to save to `XDG_PICTURES_DIR`
 and will further fallback to your home directory if this is also not available.
 
+## Contributing
+
+Contributions are welcome! You can help by:
+
+- Reporting bugs and issues on the [GitHub
+  repository](https://alonso-herreros/hyprcap/issues)
+- Suggesting new features or improvements
+- Submitting pull requests with fixes or new features
+- Improving the documentation
+- Testing the utility and providing feedback
+
 ## Credit
 
 This project is based on [Gustash's
