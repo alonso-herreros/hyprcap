@@ -79,4 +79,5 @@ and will further fallback to your home directory if this is also not available.
 
 ## Credit
 
-This project is based on my fork of [Gustash's Hyprshot](https://github.com/Gustash/Hyprshot)
+This project is based on [Gustash's
+Hyprshot](https://github.com/Gustash/Hyprshot)
