@@ -6,6 +6,10 @@ HyprCap is a utility to easily capture screenshots and screen recordings on
 It allows selecting windows, regions and monitors with your mouse, a
 `dmenu`-like program, or with command line arguments.
 
+> [!WARNING] This project is in early development and may not work as expected.
+> You can report issues on the [GitHub
+> repository](https://alonso-herreros/hyprcap/issues).
+
 ## Installation
 
 Only manual installation is possible at the moment.
