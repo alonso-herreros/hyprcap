@@ -118,36 +118,117 @@ function Print() {
 
 # =============== Main operations ===============
 
+# --------------- Capture functions ---------------
 
-# TODO: Finish implementing this
-# readonly ACTIONS_ARGS=("-")
+# function capture() {
+#     local geometry="${1}"
 
-# function notify() {
-#     [ $NOTIFY -eq 0 ] && return 0
-
-#     local message=""
-#     [ $CLIPBOARD -eq 1 ] && message+=$'Copied to the clipboard.\n'
-#     [ $SAVE -eq 1 ] && message+="Saved in <i>$SAVE_FULLPATH</i>."
-
-#     if [ $ACTIONS -eq 1 ]; then
-#         action=$(notify-send "Screenshot captured" \
-#             "${message}" \
-#             -t "$NOTIF_TIMEOUT" -i "$CAPTURE_FULLPATH" -a Hyprcap \
-#             -h string:x-dunst-stack-tag:$DUNST_TAG \
-#             -A default="Save to file" \
-#             -A copy="Copy to clipboard" \
-#             -A edit="Edit" \
-#             2>/dev/null)
-#         [ "$action" = "default" ] && action="save"
-#         # If actions is invalid or none, act_on_capture fails and this stops
-#         act_on_capture "$action" && notify
-#     else
-#         notify-send "Screenshot captured" \
-#             "${message}" \
-#             -t "$NOTIF_TIMEOUT" -i "${1}" -a Hyprcap \
-#             -h string:x-dunst-stack-tag:$DUNST_TAG
+#     if [ $RAW -eq 1 ]; then
+#         grim -g "${geometry}" -
+#         return 0
 #     fi
+
+#     mkdir -p "$CACHEDIR"
+#     grim -g "${geometry}" "$CAPTURE_FULLPATH"
+
+#     [ $CLIPBOARD -eq 1 ] && copy_capture >/dev/null
+#     [ $SAVE -eq 1 ] && save_capture >/dev/null
+
+#     notify $output
 # }
+
+# --------------- Geometry grabbing ---------------
+
+# function list_geometry () {
+#     # [ "$1" = with_title ] && local append="\t\(.title)"
+#     # [ "$1" = only_title ] && local append="\t\(.title)" || local info=""
+#     hyprctl -j clients | jq -r '.[] | select(.workspace.id | contains('$(hyprctl -j monitors | jq -r 'map(.activeWorkspace.id) | join(",")')'))'
+# }
+
+# function begin_grab() {
+#     case $OPTION in
+#         output)
+#             if [ $CURRENT -eq 1 ]; then
+#                 local geometry=$(grab_active_output)
+#             elif [ -z "${SELECTED_MONITOR}" ]; then
+#                 local geometry=$(grab_output)
+#             else
+#                 local geometry=$(grab_selected_output ${SELECTED_MONITOR})
+#             fi
+#             ;;
+#         region)
+#             local geometry=$(grab_region)
+#             ;;
+#         window)
+#             if [ $CURRENT -eq 1 ]; then
+#                 local geometry=$(grab_active_window)
+#             elif [ -z "${SELECTED_WINDOW}" ]; then
+#                 local geometry=$(grab_window)
+#             else
+#                 local geometry=$(grab_selected_window "${SELECTED_WINDOW}")
+#             fi
+#                 geometry=$(trim "${geometry}")
+#             ;;
+#         *)
+#             local geometry=$OPTION
+#             ;;
+#     esac
+#     if [ ${DELAY} -gt 0 ] 2>/dev/null; then
+#         sleep ${DELAY}
+#     fi
+#     capture "${geometry}"
+# }
+
+# function grab_region() {
+#     slurp -d
+# }
+
+# function grab_monitor() {
+#     slurp -or
+# }
+
+# function grab_active_monitor() {
+#     local active_workspace=$(hyprctl -j activeworkspace)
+#     local monitors=$(hyprctl -j monitors)
+#     Print -1 "Monitors: %s\n" "$monitors"
+#     Print -1 "Active workspace: %s\n" "$active_workspace"
+#     local current_monitor="$(echo $monitors | jq -r 'first(.[] | select(.activeWorkspace.id == '$(echo $active_workspace | jq -r '.id')'))')"
+#     Print -1 "Current monitor: %s\n" "$current_monitor"
+#     echo $current_monitor | jq -r '"\(.x),\(.y) \(.width/.scale|round)x\(.height/.scale|round)"'
+# }
+
+# function grab_selected_monitor() {
+#     local monitor=$(hyprctl -j monitors | jq --arg name "$1" -r '.[] | select(.name == $name)')
+#     Print "Capturing: %s\n" "${1}"
+#     echo $monitor | jq -r '"\(.x),\(.y) \(.width/.scale|round)x\(.height/.scale|round)"'
+# }
+
+# function grab_window() {
+#     local monitors=$(hyprctl -j monitors)
+#     local clients=$(hyprctl -j clients | jq -r '[.[] | select(.workspace.id | contains('$(echo $monitors | jq -r 'map(.activeWorkspace.id) | join(",")')'))]')
+#     Print "Monitors: %s\n" "$monitors"
+#     Print "Clients: %s\n" "$clients"
+#     # Generate boxes for each visible window and send that to slurp
+#     # through stdin
+#     local boxes="$(echo $clients | jq -r '.[] | "\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1]) \(.title)"' | cut -f1,2 -d' ')"
+#     Print "Boxes:\n%s\n" "$boxes"
+#     slurp -r <<< "$boxes"
+# }
+
+# function grab_selected_window() {
+#     local window=$(hyprctl -j clients | jq --arg title "$1" -r '.[] | select(.title == $title)')
+#     Print "Capturing: %s\n" "${1}"
+#     echo $window | jq -r '"\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"'
+# }
+
+# function grab_active_window() {
+#     local active_window=$(hyprctl -j activewindow)
+#     local box=$(echo $active_window | jq -r '"\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"' | cut -f1,2 -d' ')
+#     Print "Box:\n%s\n" "$box"
+#     echo "$box"
+# }
+
+# --------------- Trimming ---------------
 
 # function trim() {
 #     Print "Geometry: %s\n" "${1}"
@@ -193,29 +274,41 @@ function Print() {
 #     echo ${cropped}
 # }
 
-# function list_geometry () {
-#     # [ "$1" = with_title ] && local append="\t\(.title)"
-#     # [ "$1" = only_title ] && local append="\t\(.title)" || local info=""
-#     hyprctl -j clients | jq -r '.[] | select(.workspace.id | contains('$(hyprctl -j monitors | jq -r 'map(.activeWorkspace.id) | join(",")')'))'
+# =============== Secondary operations ===============
+
+# --------------- Notifications --------------
+
+# TODO: Finish implementing this
+# readonly ACTIONS_ARGS=("-")
+
+# function notify() {
+#     [ $NOTIFY -eq 0 ] && return 0
+
+#     local message=""
+#     [ $CLIPBOARD -eq 1 ] && message+=$'Copied to the clipboard.\n'
+#     [ $SAVE -eq 1 ] && message+="Saved in <i>$SAVE_FULLPATH</i>."
+
+#     if [ $ACTIONS -eq 1 ]; then
+#         action=$(notify-send "Screenshot captured" \
+#             "${message}" \
+#             -t "$NOTIF_TIMEOUT" -i "$CAPTURE_FULLPATH" -a Hyprcap \
+#             -h string:x-dunst-stack-tag:$DUNST_TAG \
+#             -A default="Save to file" \
+#             -A copy="Copy to clipboard" \
+#             -A edit="Edit" \
+#             2>/dev/null)
+#         [ "$action" = "default" ] && action="save"
+#         # If actions is invalid or none, act_on_capture fails and this stops
+#         act_on_capture "$action" && notify
+#     else
+#         notify-send "Screenshot captured" \
+#             "${message}" \
+#             -t "$NOTIF_TIMEOUT" -i "${1}" -a Hyprcap \
+#             -h string:x-dunst-stack-tag:$DUNST_TAG
+#     fi
 # }
 
-# function save_capture() {
-#     SAVE=1
-#     mkdir -p "$SAVEDIR"
-#     cat "$CAPTURE_FULLPATH" > "$SAVE_FULLPATH"
-#     Print "Saving in: %s\n" "$SAVE_FULLPATH"
-#     echo "$SAVE_FULLPATH"
-# }
-
-# function copy_capture() {
-#     CLIPBOARD=1
-#     wl-copy --type image/png < "$CAPTURE_FULLPATH"
-#     echo "$CAPTURE_FULLPATH"
-# }
-
-# function edit_capture() {
-#     swappy -f "$CAPTURE_FULLPATH" -o "$SAVE_FULLPATH"
-# }
+# --------------- Post-capture actions ---------------
 
 # function act_on_capture() {
 #     local acted=0
@@ -238,23 +331,27 @@ function Print() {
 #     [[ $acted -ne 0 ]] && return 0 || return 1
 # }
 
-# function capture() {
-#     local geometry="${1}"
-
-#     if [ $RAW -eq 1 ]; then
-#         grim -g "${geometry}" -
-#         return 0
-#     fi
-
-#     mkdir -p "$CACHEDIR"
-#     grim -g "${geometry}" "$CAPTURE_FULLPATH"
-
-#     [ $CLIPBOARD -eq 1 ] && copy_capture >/dev/null
-#     [ $SAVE -eq 1 ] && save_capture >/dev/null
-
-#     notify $output
+# function save_capture() {
+#     SAVE=1
+#     mkdir -p "$SAVEDIR"
+#     cat "$CAPTURE_FULLPATH" > "$SAVE_FULLPATH"
+#     Print "Saving in: %s\n" "$SAVE_FULLPATH"
+#     echo "$SAVE_FULLPATH"
 # }
 
+# function copy_capture() {
+#     CLIPBOARD=1
+#     wl-copy --type image/png < "$CAPTURE_FULLPATH"
+#     echo "$CAPTURE_FULLPATH"
+# }
+
+# function edit_capture() {
+#     swappy -f "$CAPTURE_FULLPATH" -o "$SAVE_FULLPATH"
+# }
+
+# --------------- Freezing ---------------
+
+# TODO: Improve this or something
 # function checkRunning() {
 #     sleep 1
 #     while [[ 1 == 1 ]]; do
@@ -272,89 +369,6 @@ function Print() {
 #         sleep 0.2
 #         # HYPRPICKER_PID=$!
 #     fi
-# }
-
-# function begin_grab() {
-#     case $OPTION in
-#         output)
-#             if [ $CURRENT -eq 1 ]; then
-#                 local geometry=$(grab_active_output)
-#             elif [ -z "${SELECTED_MONITOR}" ]; then
-#                 local geometry=$(grab_output)
-#             else
-#                 local geometry=$(grab_selected_output ${SELECTED_MONITOR})
-#             fi
-#             ;;
-#         region)
-#             local geometry=$(grab_region)
-#             ;;
-#         window)
-#             if [ $CURRENT -eq 1 ]; then
-#                 local geometry=$(grab_active_window)
-#             elif [ -z "${SELECTED_WINDOW}" ]; then
-#                 local geometry=$(grab_window)
-#             else
-#                 local geometry=$(grab_selected_window "${SELECTED_WINDOW}")
-#             fi
-#                 geometry=$(trim "${geometry}")
-#             ;;
-#         *)
-#             local geometry=$OPTION
-#             ;;
-#     esac
-#     if [ ${DELAY} -gt 0 ] 2>/dev/null; then
-#         sleep ${DELAY}
-#     fi
-#     capture "${geometry}"
-# }
-
-# function grab_output() {
-#     slurp -or
-# }
-
-# function grab_active_output() {
-#     local active_workspace=$(hyprctl -j activeworkspace)
-#     local monitors=$(hyprctl -j monitors)
-#     Print "Monitors: %s\n" "$monitors"
-#     Print "Active workspace: %s\n" "$active_workspace"
-#     local current_monitor="$(echo $monitors | jq -r 'first(.[] | select(.activeWorkspace.id == '$(echo $active_workspace | jq -r '.id')'))')"
-#     Print "Current output: %s\n" "$current_monitor"
-#     echo $current_monitor | jq -r '"\(.x),\(.y) \(.width/.scale|round)x\(.height/.scale|round)"'
-# }
-
-# function grab_selected_output() {
-#     local monitor=$(hyprctl -j monitors | jq --arg name "$1" -r '.[] | select(.name == $name)')
-#     Print "Capturing: %s\n" "${1}"
-#     echo $monitor | jq -r '"\(.x),\(.y) \(.width/.scale|round)x\(.height/.scale|round)"'
-# }
-
-# function grab_region() {
-#     slurp -d
-# }
-
-# function grab_window() {
-#     local monitors=$(hyprctl -j monitors)
-#     local clients=$(hyprctl -j clients | jq -r '[.[] | select(.workspace.id | contains('$(echo $monitors | jq -r 'map(.activeWorkspace.id) | join(",")')'))]')
-#     Print "Monitors: %s\n" "$monitors"
-#     Print "Clients: %s\n" "$clients"
-#     # Generate boxes for each visible window and send that to slurp
-#     # through stdin
-#     local boxes="$(echo $clients | jq -r '.[] | "\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1]) \(.title)"' | cut -f1,2 -d' ')"
-#     Print "Boxes:\n%s\n" "$boxes"
-#     slurp -r <<< "$boxes"
-# }
-
-# function grab_selected_window() {
-#     local window=$(hyprctl -j clients | jq --arg title "$1" -r '.[] | select(.title == $title)')
-#     Print "Capturing: %s\n" "${1}"
-#     echo $window | jq -r '"\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"'
-# }
-
-# function grab_active_window() {
-#     local active_window=$(hyprctl -j activewindow)
-#     local box=$(echo $active_window | jq -r '"\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"' | cut -f1,2 -d' ')
-#     Print "Box:\n%s\n" "$box"
-#     echo "$box"
 # }
 
 # =============== Argument parsing ===============
