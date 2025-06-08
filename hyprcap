@@ -445,9 +445,10 @@ function args() {
     done
     shift # Remove the command itself from the arguments
 
+    # -- Command --
     # Check if a command was specified
     if [ -z "$1" ]; then
-        echo "No command specified. Use --help for help."
+        Print -E "Fatal: No command specified. Use --help for help.\n"
         exit 1
     fi
     COMMAND=$(parse_command "$1")
