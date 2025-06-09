@@ -158,8 +158,7 @@ function get_geometry() {
             if [ $SELECT_ACTIVE -eq 1 ]; then
                 geometry=$(grab_monitor_active)
             elif [ -n "$SELECT_MATCH" ]; then
-                NYI && exit 1 # TODO: Remove when implemented
-                # geometry=$(grab_monitor_match $SELECT_MATCH)
+                geometry=$(grab_monitor_match $SELECT_MATCH)
             else
                 geometry=$(grab_monitor)
             fi
@@ -204,11 +203,23 @@ function grab_monitor_active() {
         | jq -r '"\(.x),\(.y) \(.width/.scale|round)x\(.height/.scale|round)"'
 }
 
-# function grab_selected_monitor() {
-#     local monitor=$(hyprctl -j monitors | jq --arg name "$1" -r '.[] | select(.name == $name)')
-#     Print "Capturing: %s\n" "${1}"
-#     echo $monitor | jq -r '"\(.x),\(.y) \(.width/.scale|round)x\(.height/.scale|round)"'
-# }
+function grab_monitor_match() {
+    local name="$1"
+    local monitors=$(hyprctl -j monitors)
+    local matching_monitor=$(echo $monitors \
+        | jq --arg name "$name" -r '.[] | select(.name == $name)')
+
+    Print -2 "Monitors: $monitors\n"
+    Print -2 "Matching monitor: $matching_monitor\n"
+
+    if [ -z "$matching_monitor" ]; then
+        Print -E "Error: No monitor with name '$name' found.\n"
+        exit 1
+    fi
+
+    echo $matching_monitor \
+        | jq -r '"\(.x),\(.y) \(.width/.scale|round)x\(.height/.scale|round)"'
+}
 
 # function grab_window() {
 #     local monitors=$(hyprctl -j monitors)
