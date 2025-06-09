@@ -1,7 +1,5 @@
 #!/usr/bin/env sh
 
-set -e
-
 readonly VERSION="None (not yet released)"
 
 readonly CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/hyprcap"
