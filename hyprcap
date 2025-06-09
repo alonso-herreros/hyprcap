@@ -156,8 +156,7 @@ function get_geometry() {
             ;;
         monitor)
             if [ $SELECT_ACTIVE -eq 1 ]; then
-                NYI && exit 1 # TODO: Remove when implemented
-                # geometry=$(grab_monitor_active)
+                geometry=$(grab_monitor_active)
             elif [ -n "$SELECT_MATCH" ]; then
                 NYI && exit 1 # TODO: Remove when implemented
                 # geometry=$(grab_monitor_match $SELECT_MATCH)
@@ -191,15 +190,19 @@ function grab_monitor() {
     slurp -or
 }
 
-# function grab_active_monitor() {
-#     local active_workspace=$(hyprctl -j activeworkspace)
-#     local monitors=$(hyprctl -j monitors)
-#     Print -1 "Monitors: %s\n" "$monitors"
-#     Print -1 "Active workspace: %s\n" "$active_workspace"
-#     local current_monitor="$(echo $monitors | jq -r 'first(.[] | select(.activeWorkspace.id == '$(echo $active_workspace | jq -r '.id')'))')"
-#     Print -1 "Current monitor: %s\n" "$current_monitor"
-#     echo $current_monitor | jq -r '"\(.x),\(.y) \(.width/.scale|round)x\(.height/.scale|round)"'
-# }
+function grab_monitor_active() {
+    local active_workspace_id=$(hyprctl -j activeworkspace | jq -r '.id')
+    local monitors=$(hyprctl -j monitors)
+    local active_monitor="$(echo $monitors \
+        | jq -r '.[] | select(.activeWorkspace.id == '$active_workspace_id')')"
+
+    Print -2 "Active workspace ID: $active_workspace_id\n"
+    Print -2 "Monitors: $monitors\n"
+    Print -2 "Current monitor: $active_monitor\n"
+
+    echo $active_monitor \
+        | jq -r '"\(.x),\(.y) \(.width/.scale|round)x\(.height/.scale|round)"'
+}
 
 # function grab_selected_monitor() {
 #     local monitor=$(hyprctl -j monitors | jq --arg name "$1" -r '.[] | select(.name == $name)')
