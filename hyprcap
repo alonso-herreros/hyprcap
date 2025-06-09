@@ -634,6 +634,14 @@ Print -1 " (active: ${SELECT_ACTIVE:-no}, match: '$SELECT_MATCH')\n"
 
 GEOMETRY=$(get_geometry)
 
+case "$GEOMETRY" in
+    *[0-9]*,*[0-9]*' '[0-9]*x[0-9]*) # Valid geometry
+        ;;
+    *)
+        Print -E "Fatal: Resolved geometry '$GEOMETRY' is invalid.\n"
+        exit 1;;
+esac
+
 Print -1 "Geometry: $GEOMETRY\n"
 
 # if [ $DELAY -gt 0 ] 2>/dev/null; then
