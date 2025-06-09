@@ -156,15 +156,16 @@ function get_geometry() {
             geometry=$(trim_slurp_border "$geometry")
             ;;
         monitor)
-            NYI && exit 1;; # TODO: Remove when implemented
-#             if [ $CURRENT -eq 1 ]; then
-#                 local geometry=$(grab_active_output)
-#             elif [ -z "${SELECTED_MONITOR}" ]; then
-#                 local geometry=$(grab_output)
-#             else
-#                 local geometry=$(grab_selected_output ${SELECTED_MONITOR})
-#             fi
-#             ;;
+            if [ $SELECT_ACTIVE -eq 1 ]; then
+                NYI && exit 1 # TODO: Remove when implemented
+                # geometry=$(grab_monitor_active)
+            elif [ -n "$SELECT_MATCH" ]; then
+                NYI && exit 1 # TODO: Remove when implemented
+                # geometry=$(grab_monitor_match $SELECT_MATCH)
+            else
+                geometry=$(grab_monitor)
+            fi
+            ;;
         window)
             NYI && exit 1;; # TODO: Remove when implemented
 #             if [ $CURRENT -eq 1 ]; then
@@ -187,9 +188,9 @@ function grab_region() {
     slurp -d -w "$SLURP_BORDER_WEIGHT"
 }
 
-# function grab_monitor() {
-#     slurp -or
-# }
+function grab_monitor() {
+    slurp -or
+}
 
 # function grab_active_monitor() {
 #     local active_workspace=$(hyprctl -j activeworkspace)
@@ -594,6 +595,8 @@ function parse_selection() {
 
 # Selection
 SELECTION=
+SELECT_ACTIVE=0
+SELECT_MATCH=
 
 # Saving
 # SAVE=0 # not implemented yet
