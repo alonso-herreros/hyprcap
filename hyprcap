@@ -103,7 +103,7 @@ function Version() {
 }
 
 function NYI() {
-    echo "You have requested a feature that is not yet implemented."
+    Print -E "Fatal: You have requested a feature that is not yet implemented\n"
 }
 
 # TODO: Check this implementation
