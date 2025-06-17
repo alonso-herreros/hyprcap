@@ -709,7 +709,21 @@ if [ -n "$DELAY" ]; then
     sleep $DELAY
 fi
 
-# capture "$geometry"
+case "$COMMAND" in
+    screenshot)
+        NYI && exit 1 # TODO: Remove when implemented
+        Print -1 "Taking a screenshot of $GEOMETRY\n"
+        ;;
+    record)
+        NYI && exit 1 # TODO: Remove when implemented
+        Print -1 "Taking a screen recording of $GEOMETRY\n"
+        ;;
+    # TODO: Maybe add a simple command to print the geometry
+    *)
+        Print -E "Fatal: Unknown command '$COMMAND'.\n"
+        exit 1
+        ;;
+esac
 
 # if [ -z "$XDG_PICTURES_DIR" ]; then
 #    type xdg-user-dir >/dev/null && XDG_PICTURES_DIR=$(xdg-user-dir PICTURES)
