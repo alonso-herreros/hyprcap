@@ -241,7 +241,7 @@ function grab_window_active() {
         exit 1
     fi
 
-    echo $active_window | jq -r '"\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"'
+    echo $active_window | geometry_from_window
 }
 
 # function grab_selected_window() {
@@ -252,6 +252,10 @@ function grab_window_active() {
 
 function geometry_from_monitor() {
     jq -r '"\(.x),\(.y) \(.width/.scale|round)x\(.height/.scale|round)"'
+}
+
+function geometry_from_window() {
+    jq -r '"\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"'
 }
 
 # --------------- Trimming ---------------
