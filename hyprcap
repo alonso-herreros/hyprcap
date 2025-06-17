@@ -82,13 +82,13 @@ Capture options:
                                 available for screenshots.
 
 Notification options:
-! -n, --notify                  Send a notification when capture is done.
+  -n, --notify                  Send a notification when capture is done.
   -N, --no-notify               Never send a notification (default).
 ! -a, --actions                 Show actions in the notification (default).
                                 Requires --notify.
   -A, --no-actions              Don't show actions in the notification. Requires
                                 --notify.
-! -t, --notif-timeout <time>    Notification timeout in milliseconds. Requires
+  -t, --notif-timeout <time>    Notification timeout in milliseconds. Requires
                                 --notify
                                 Default: 10 seconds.
 
@@ -375,32 +375,36 @@ function trim_slurp_border() {
 # TODO: Finish implementing this
 # readonly ACTIONS_ARGS=("-")
 
-# function notify() {
-#     [ $NOTIFY -eq 0 ] && return 0
+function notify() {
+    NOTIFY=1 # In case it was called for other reasons???
 
-#     local message=""
-#     [ $CLIPBOARD -eq 1 ] && message+=$'Copied to the clipboard.\n'
-#     [ $SAVE -eq 1 ] && message+="Saved in <i>$SAVE_FULLPATH</i>."
+    local message=""
+    [ $COPY -eq 1 ] && message+="Copied to the clipboard.\n"
+    [ $SAVE -eq 1 ] && message+="Saved in <i>$SAVE_PATH</i>.\n"
 
-#     if [ $ACTIONS -eq 1 ]; then
-#         action=$(notify-send "Screenshot captured" \
-#             "${message}" \
-#             -t "$NOTIF_TIMEOUT" -i "$CAPTURE_FULLPATH" -a Hyprcap \
-#             -h string:x-dunst-stack-tag:$DUNST_TAG \
-#             -A default="Save to file" \
-#             -A copy="Copy to clipboard" \
-#             -A edit="Edit" \
-#             2>/dev/null)
-#         [ "$action" = "default" ] && action="save"
-#         # If actions is invalid or none, act_on_capture fails and this stops
-#         act_on_capture "$action" && notify
-#     else
-#         notify-send "Screenshot captured" \
-#             "${message}" \
-#             -t "$NOTIF_TIMEOUT" -i "${1}" -a Hyprcap \
-#             -h string:x-dunst-stack-tag:$DUNST_TAG
-#     fi
-# }
+    notify-send "Screenshot captured" "$message" \
+        -t "$NOTIF_TIMEOUT" -a HyprCap -r $NOTIF_ID \
+        -i "$CAPTURE_PATH"
+
+    # if [ $ACTIONS -eq 1 ]; then
+    #     action=$(notify-send "Screenshot captured" \
+    #         "${message}" \
+    #         -t "$NOTIF_TIMEOUT" -i "$CAPTURE_FULLPATH" -a Hyprcap \
+    #         -h string:x-dunst-stack-tag:$DUNST_TAG \
+    #         -A default="Save to file" \
+    #         -A copy="Copy to clipboard" \
+    #         -A edit="Edit" \
+    #         2>/dev/null)
+    #     [ "$action" = "default" ] && action="save"
+    #     # If actions is invalid or none, act_on_capture fails and this stops
+    #     act_on_capture "$action" && notify
+    # else
+    #     notify-send "Screenshot captured" \
+    #         "${message}" \
+    #         -t "$NOTIF_TIMEOUT" -i "${1}" -a Hyprcap \
+    #         -h string:x-dunst-stack-tag:$DUNST_TAG
+    # fi
+}
 
 # --------------- Post-capture actions ---------------
 
@@ -528,7 +532,6 @@ function args() {
 
             -n | --notify)
                 NOTIFY=1
-                NYI && exit 1 # TODO: Remove when implemented
                 ;;
             -N | --no-notify)
                 NOTIFY=0
@@ -542,7 +545,6 @@ function args() {
                 ;;
             -t | --notif-timeout)
                 NOTIF_TIMEOUT=$2
-                NYI && exit 1 # TODO: Remove when implemented
                 shift;;
 
             -r | --raw)
@@ -693,10 +695,10 @@ COPY=0
 # FREEZE=0 # not implemented yet
 DELAY= # Empty by default. Not the same as explicit 0.
 
-# # Notifications # not implemented yet
-# NOTIFY=0
+# Notifications
+NOTIFY=0
+NOTIF_TIMEOUT=10000
 # ACTIONS=1
-# NOTIF_TIMEOUT=10000
 
 # Output
 VERBOSE=0
@@ -763,5 +765,7 @@ esac
 [ $SAVE -eq 1 ] && save_capture
 
 [ $COPY -eq 1 ] && copy_capture
+
+[ $NOTIFY -eq 1 ] && notify
 
 [ $RAW -eq 1 ] && cat "$CAPTURE_PATH"
