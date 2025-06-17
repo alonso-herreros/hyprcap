@@ -37,9 +37,9 @@ A selection can be specified after the command, with the -m or --mode option,
 or using a dmenu-like menu if neither is specified.
 
 Selection:
-! monitor                   Select an entire monitor interactively.
-! monitor:active            Select the currently focused monitor.
-! monitor:<name>            Select the monitor with the exact given name
+  monitor                   Select an entire monitor interactively.
+  monitor:active            Select the currently focused monitor.
+  monitor:<name>            Select the monitor with the exact given name
 
 ! window                    Select a visible window interactively.
 ! window:active             Select the currently focused window.
