@@ -7,6 +7,11 @@ readonly CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/hyprcap"
 readonly CAPTURE_FILENAME="capture"
 readonly CAPTURE_PATH="$CACHE_DIR/$CAPTURE_FILENAME"
 
+readonly DEF_SCREENSHOT_DIR="${XDG_PICTURES_DIR:-$HOME/Pictures}/Screenshots"
+readonly DEF_RECORDING_DIR="${XDG_VIDEOS_DIR:-$HOME/Videos}/Captures"
+readonly DEF_SCREENSHOT_FILENAME="$(date +'%Y-%m-%d-%H%M%S_hyprcap.png')"
+readonly DEF_RECORDING_FILENAME="$(date +'%Y-%m-%d-%H%M%S_hyprcap.mp4')"
+
 readonly DMENU_COMMAND="fuzzel -d"
 
 readonly SLURP_BORDER_WEIGHT=1
@@ -54,15 +59,17 @@ Selection options:
   -s, --select <selection>      Alternative way to specify the selection.
 
 Saving options:
-! -o, --output-dir <dir>        Directory in which to save captures.
+  -w, --write                   Save the capture to a file using the default
+                                filename and directory.
+  -o, --output-dir <dir>        Directory in which to save captures.
                                 Default: \$XDG_PICTURES_DIR/Screenshots or
                                 \$XDG_VIDEOS_DIR/Captures
-! -f, --filename <filename>     The file name for the resulting capture within
+  -f, --filename <filename>     The file name for the resulting capture within
                                 the output directory.
                                 Default:
                                   YYYY-MM-DD-hhmmss_hyprcap.<extension>
                                 where <extension> is determined by the command
-                                (e.g. png for screenshots, mpeg for recordings).
+                                (e.g. png for screenshots, mp4 for recordings).
   -F, --no-file                 Don't save captures to a file (default).
 ! -c, --copy                    Copy capture to clipboard with 'wl-copy'.
 
@@ -124,8 +131,6 @@ function Print() {
 
 function screenshot() {
     local capture_path="$CAPTURE_PATH"
-
-    [ $RAW -eq 1 ] && capture_path="-"
 
     grim -g "$GEOMETRY" "$capture_path"
 }
@@ -461,8 +466,9 @@ function trim_slurp_border() {
 # =============== Argument parsing ===============
 
 function args() {
-    local OPTS="s:o:f:Fcd:znNaAt:rVqvh"
-    local LONG_OPTS="select:,output-dir:,filename:,no-file,copy,delay:,freeze,"
+    local OPTS="s:wo:f:Fcd:znNaAt:rVqvh"
+    local LONG_OPTS="select:,write,output-dir:,filename:,no-file,copy,"
+    LONG_OPTS+="delay:,freeze,"
     LONG_OPTS+="notify,no-notify,actions,no-actions,notif-timeout:"
     LONG_OPTS+="raw,verbose,quiet,version,help"
 
@@ -475,15 +481,16 @@ function args() {
                 local selection="$2" # Parsing is done later
                 shift;;
 
+            -w | --write)
+                SAVE=1
+                ;;
             -o | --output-dir)
                 SAVE=1
                 OUTPUT_DIR="$2"
-                NYI && exit 1 # TODO: Remove when implemented
                 shift;;
             -f | --filename)
                 SAVE=1
                 FILENAME="$2"
-                NYI && exit 1 # TODO: Remove when implemented
                 shift;;
             -F | --no-file)
                 SAVE=0
@@ -658,11 +665,9 @@ SELECT_ACTIVE=0
 SELECT_MATCH=
 
 # Saving
-# SAVE=0 # not implemented yet
-# OUTPUT_DIR= # not implemented yet
-# [ -z "$XDG_PICTURES_DIR" ] && type xdg-user-dir >/dev/null && XDG_PICTURES_DIR=$(xdg-user-dir PICTURES)
-# FILENAME="$(date +'%Y-%m-%d-%H%M%S_hyprcap.png')"
-# [ -z "$HYPRCAP_DIR" ] && SAVEDIR=${XDG_PICTURES_DIR:=~/Pictures} || SAVEDIR=${HYPRCAP_DIR}
+SAVE=0
+OUTPUT_DIR=
+FILENAME=
 # COPY=0 # not implemented yet
 
 # Behavior
@@ -736,6 +741,21 @@ esac
 
 # ---- Post-capture ----
 
-# SAVE_PATH="$OUTPUT_DIR/$CAPTURE_FILENAME"
-# [ $SAVE -eq 1 ] && Print "Saving in: %s\n" "$SAVE_FULLPATH"
-# begin_grab $OPTION & checkRunning
+if [ $SAVE -eq 1 ]; then
+    # If output directory or filename are not set, use the default ones
+    if [ "$COMMAND" == "screenshot" ]; then
+        OUTPUT_DIR="${OUTPUT_DIR:-$DEF_SCREENSHOT_DIR}"
+        FILENAME="${FILENAME:-$DEF_SCREENSHOT_FILENAME}"
+    elif [ "$COMMAND" == "record" ]; then
+        OUTPUT_DIR="${OUTPUT_DIR:-$DEF_RECORDING_DIR}"
+        FILENAME="${FILENAME:-$DEF_RECORDING_FILENAME}"
+    fi
+
+    mkdir -p "$OUTPUT_DIR"
+
+    SAVE_PATH="$OUTPUT_DIR/$FILENAME"
+    Print -1 "Saving capture to $SAVE_PATH\n"
+    mv "$CAPTURE_PATH" "$SAVE_PATH"
+fi
+
+[ $RAW -eq 1 ] && cat "$CAPTURE_PATH"
