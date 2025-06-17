@@ -678,10 +678,13 @@ DELAY= # Empty by default. Not the same as explicit 0.
 VERBOSE=0
 RAW=0
 
+# ---- Parse arguments ----
 args $0 "$@"
 
 Print -1 "Running HyprCap version $VERSION\n"
 Print -1 "Command selected: $COMMAND\n"
+
+# ---- Init ----
 
 # TODO: Call freeze around here
 
@@ -689,6 +692,8 @@ Print -1 "Command selected: $COMMAND\n"
 
 Print -1 "Selection: $SELECTION"
 Print -1 " (active: ${SELECT_ACTIVE:-no}, match: '$SELECT_MATCH')\n"
+
+# ---- Get geometry ----
 
 GEOMETRY=$(get_geometry)
 
@@ -702,6 +707,7 @@ esac
 
 Print -1 "Geometry: $GEOMETRY\n"
 
+# ---- Pre-capture ----
 # String comparison doesn't fail with decimals and allows explicit 0
 if [ -n "$DELAY" ]; then
     Print -1 "Delaying for $DELAY seconds...\n"
@@ -709,6 +715,8 @@ if [ -n "$DELAY" ]; then
 fi
 
 mkdir -p "$CACHE_DIR"
+
+# ---- Capture ----
 
 case "$COMMAND" in
     screenshot)
@@ -726,9 +734,7 @@ case "$COMMAND" in
         ;;
 esac
 
-# if [ -z "$XDG_PICTURES_DIR" ]; then
-#    type xdg-user-dir >/dev/null && XDG_PICTURES_DIR=$(xdg-user-dir PICTURES)
-# fi
+# ---- Post-capture ----
 
 # SAVE_PATH="$OUTPUT_DIR/$CAPTURE_FILENAME"
 # [ $SAVE -eq 1 ] && Print "Saving in: %s\n" "$SAVE_FULLPATH"
