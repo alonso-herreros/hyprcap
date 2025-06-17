@@ -42,7 +42,7 @@ Selection:
   monitor:<name>            Select the monitor with the exact given name
 
 ! window                    Select a visible window interactively.
-! window:active             Select the currently focused window.
+  window:active             Select the currently focused window.
 ! window:<title>            Select the first window that contains the title.
 
   region                    Select a region manually using 'slurp'.
@@ -164,16 +164,16 @@ function get_geometry() {
             fi
             ;;
         window)
-            NYI && exit 1;; # TODO: Remove when implemented
-#             if [ $CURRENT -eq 1 ]; then
-#                 local geometry=$(grab_active_window)
-#             elif [ -z "${SELECTED_WINDOW}" ]; then
-#                 local geometry=$(grab_window)
-#             else
-#                 local geometry=$(grab_selected_window "${SELECTED_WINDOW}")
-#             fi
-#                 geometry=$(trim "${geometry}")
-#             ;;
+            if [ $SELECT_ACTIVE -eq 1 ]; then
+                geometry=$(grab_window_active)
+            elif [ -n "$SELECT_MATCH" ]; then
+                NYI && exit 1 # TODO: Remove when implemented
+                geometry=$(grab_window_match $SELECT_MATCH)
+            else
+                NYI && exit 1 # TODO: Remove when implemented
+                geometry=$(grab_window)
+            fi
+            ;;
         *)
             geometry="$SELECTION"
             ;;
@@ -233,17 +233,23 @@ function grab_monitor_match() {
 #     slurp -r <<< "$boxes"
 # }
 
+function grab_window_active() {
+    local active_window=$(hyprctl -j activewindow)
+
+    Print -2 "Active window: $active_window\n"
+
+    if [ "$active_window" = "{}" ]; then
+        Print -E "Error: No active window found.\n"
+        exit 1
+    fi
+
+    echo $active_window | jq -r '"\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"'
+}
+
 # function grab_selected_window() {
 #     local window=$(hyprctl -j clients | jq --arg title "$1" -r '.[] | select(.title == $title)')
 #     Print "Capturing: %s\n" "${1}"
 #     echo $window | jq -r '"\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"'
-# }
-
-# function grab_active_window() {
-#     local active_window=$(hyprctl -j activewindow)
-#     local box=$(echo $active_window | jq -r '"\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"' | cut -f1,2 -d' ')
-#     Print "Box:\n%s\n" "$box"
-#     echo "$box"
 # }
 
 # --------------- Trimming ---------------
