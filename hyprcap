@@ -84,10 +84,10 @@ Notification options:
 
 Output options:
 ! -r, --raw                     Output raw capture data to stdout.
-  -V, --verbose                 Print extra information. Specify multiple times
+  -v, --verbose                 Print extra information. Specify multiple times
                                 to increase verbosity.
   -q, --quiet                   Print less information.
-  -v, --version                 Show the version and exit.
+  -V, --version                 Show the version and exit.
   -h, --help                    Show this help message and exit.
 
 Examples:
@@ -481,13 +481,13 @@ function args() {
                 RAW=1
                 NYI && exit 1 # TODO: Remove when implemented
                 ;;
-            -V | --verbose)
+            -v | --verbose)
                 VERBOSE+=1
                 ;;
             -q | --quiet)
                 VERBOSE=-1
                 ;;
-            -v | --version)
+            -V | --version)
                 Version
                 exit 0;;
             -h | --help)
