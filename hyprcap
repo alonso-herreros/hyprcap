@@ -71,7 +71,7 @@ Saving options:
                                 where <extension> is determined by the command
                                 (e.g. png for screenshots, mp4 for recordings).
   -F, --no-file                 Don't save captures to a file (default).
-! -c, --copy                    Copy capture to clipboard with 'wl-copy'.
+  -c, --copy                    Copy capture to clipboard with 'wl-copy'.
 
 Capture options:
   -d, --delay <time>            How long to delay starting the capture after
@@ -497,7 +497,6 @@ function args() {
                 ;;
             -c | --copy)
                 COPY=1
-                NYI && exit 1 # TODO: Remove when implemented
                 ;;
 
             -d | --delay)
@@ -756,6 +755,15 @@ if [ $SAVE -eq 1 ]; then
     SAVE_PATH="$OUTPUT_DIR/$FILENAME"
     Print -1 "Saving capture to $SAVE_PATH\n"
     mv "$CAPTURE_PATH" "$SAVE_PATH"
+fi
+
+if [ $COPY -eq 1 ]; then
+    Print -1 "Copying capture to clipboard\n"
+    if [ "$COMMAND" == "screenshot" ]; then
+        wl-copy --type image/png < "$CAPTURE_PATH"
+    elif [ "$COMMAND" == "record" ]; then
+        NYI && exit 1 # TODO: Remove when implemented
+    fi
 fi
 
 [ $RAW -eq 1 ] && cat "$CAPTURE_PATH"
