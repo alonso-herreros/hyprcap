@@ -70,6 +70,8 @@ Saving options:
                                   YYYY-MM-DD-hhmmss_hyprcap.<extension>
                                 where <extension> is determined by the command
                                 (e.g. png for screenshots, mp4 for recordings).
+                                The extension will determine the file format
+                                for recordings.
   -F, --no-file                 Don't save captures to a file (default).
   -c, --copy                    Copy capture to clipboard with 'wl-copy'.
 
