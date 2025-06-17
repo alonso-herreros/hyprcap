@@ -210,36 +210,12 @@ function grab_monitor_match() {
 }
 
 function grab_window() {
-    local monitors=$(hyprctl -j monitors)
-    local workspaces=$(hyprctl -j workspaces)
-    # Workspaces that are not active (i.e. not visible on any monitor)
-    local active_ids=$(echo $monitors \
-        | jq '[map(.activeWorkspace.id), map(.specialWorkspace.id)] | flatten')
-    # Workspaces with fullscreen windows
-    local fullscreen_ids=$(echo $workspaces \
-        | jq 'map(select(.hasfullscreen) | .id)')
-
-    Print -2 "Active workspaces IDs: $active_ids\n"
-    Print -2 "Fullscreen workspaces IDs: $fullscreen_ids\n"
-
-    local windows=$(hyprctl -j clients)
-    # Windows need to:
-    # * be on a visible workspace
-    # * not hidden (e.g. inactive in a group)
-    # * not be in a fullscreen workspace, or be fullscreen
-    local visible_windows=$(echo $windows \
-        | jq --argjson active_ids "$active_ids" \
-            --argjson fullscreen_ids "$fullscreen_ids" \
-        '.[] | select(
-            ([.workspace.id]|inside($active_ids)) and
-            (.hidden|not) and
-            (([.workspace.id]|inside($fullscreen_ids)|not) or (.fullscreen!=0))
-        )')
+    local visible_windows=$(get_visible_windows)
 
     Print -2 "Visible windows: $visible_windows\n"
 
     # Generate boxes for each visible window and send that to slurp
-    local boxes="$(echo $visible_windows | geometry_from_window)"
+    local boxes="$(echo $visible_windows | jq '.[]' | geometry_from_window)"
 
     Print -1 "Window boxes:\n$boxes\n"
 
@@ -261,12 +237,12 @@ function grab_window_active() {
 
 function grab_window_match() {
     local title="$1"
-    local windows=$(hyprctl -j clients)
-    local matching_windows=$(echo $windows \
+    local visible_windows=$(get_visible_windows)
+    local matching_windows=$(echo $visible_windows \
         | jq --arg title "$title" -r 'map(select(.title | contains($title)))')
     local matching_window=$(echo $matching_windows | jq -r 'first')
 
-    Print -2 "Windows: $windows\n"
+    Print -2 "Visible windows: $visible_windows\n"
     Print -2 "Matching windows: $matching_windows\n"
     Print -2 "First matching window: $matching_window\n"
 
@@ -276,6 +252,34 @@ function grab_window_match() {
     fi
 
     echo $matching_window | geometry_from_window
+}
+
+function get_visible_windows() {
+    local monitors=$(hyprctl -j monitors)
+    local workspaces=$(hyprctl -j workspaces)
+    # Workspaces that are not active (i.e. not visible on any monitor)
+    local active_ids=$(echo $monitors \
+        | jq '[map(.activeWorkspace.id), map(.specialWorkspace.id)] | flatten')
+    # Workspaces with fullscreen windows
+    local fullscreen_ids=$(echo $workspaces \
+        | jq 'map(select(.hasfullscreen) | .id)')
+
+    Print -2 "Active workspaces IDs: $active_ids\n"
+    Print -2 "Fullscreen workspaces IDs: $fullscreen_ids\n"
+
+    local windows=$(hyprctl -j clients)
+    # Windows need to:
+    # * be on a visible workspace
+    # * not hidden (e.g. inactive in a group)
+    # * not be in a fullscreen workspace, or be fullscreen
+    echo $windows \
+        | jq --argjson active_ids "$active_ids" \
+            --argjson fullscreen_ids "$fullscreen_ids" \
+        'map(select(
+            ([.workspace.id]|inside($active_ids)) and
+            (.hidden|not) and
+            (([.workspace.id]|inside($fullscreen_ids)|not) or (.fullscreen!=0))
+        ))'
 }
 
 function geometry_from_monitor() {
