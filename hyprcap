@@ -66,7 +66,7 @@ Saving options:
 ! -c, --copy                    Copy capture to clipboard with 'wl-copy'.
 
 Capture options:
-! -d, --delay <time>            How long to delay starting the capture after
+  -d, --delay <time>            How long to delay starting the capture after
                                 selection is done in seconds.
 ! -z, --freeze                  Freeze the screen on initialization. Only
                                 available for screenshots.
@@ -499,7 +499,6 @@ function args() {
 
             -d | --delay)
                 DELAY="$2"
-                NYI && exit 1 # TODO: Remove when implemented
                 shift;;
             -z | --freeze)
                 FREEZE=1
@@ -669,6 +668,7 @@ SELECT_MATCH=
 
 # Behavior
 # FREEZE=0 # not implemented yet
+DELAY= # Empty by default. Not the same as explicit 0.
 
 # # Notifications # not implemented yet
 # NOTIFY=0
@@ -703,9 +703,12 @@ esac
 
 Print -1 "Geometry: $GEOMETRY\n"
 
-# if [ $DELAY -gt 0 ] 2>/dev/null; then
-#     sleep $DELAY
-# fi
+# String comparison doesn't fail with decimals and allows explicit 0
+if [ -n "$DELAY" ]; then
+    Print -1 "Delaying for $DELAY seconds...\n"
+    sleep $DELAY
+fi
+
 # capture "$geometry"
 
 # if [ -z "$XDG_PICTURES_DIR" ]; then
