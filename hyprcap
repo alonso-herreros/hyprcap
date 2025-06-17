@@ -2,6 +2,7 @@
 
 readonly VERSION="None (not yet released)"
 
+# TODO: This is rather a tmp file than a cache file. Fix it?
 readonly CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/hyprcap"
 readonly CAPTURE_FILENAME="capture"
 readonly CAPTURE_PATH="$CACHE_DIR/$CAPTURE_FILENAME"
