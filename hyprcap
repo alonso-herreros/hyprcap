@@ -642,6 +642,10 @@ function parse_selection() {
 
 # ---- Pre-init ----
 
+# Set terminal title. This prevents self-matching when selecting windows
+# by name
+echo -ne "\033]0;HyprCap\007"
+
 # ---- Options and defaults ----
 
 # Selection
