@@ -199,8 +199,7 @@ function grab_monitor_active() {
     Print -2 "Monitors: $monitors\n"
     Print -2 "Current monitor: $active_monitor\n"
 
-    echo $active_monitor \
-        | jq -r '"\(.x),\(.y) \(.width/.scale|round)x\(.height/.scale|round)"'
+    echo $active_monitor | geometry_from_monitor
 }
 
 function grab_monitor_match() {
@@ -217,8 +216,7 @@ function grab_monitor_match() {
         exit 1
     fi
 
-    echo $matching_monitor \
-        | jq -r '"\(.x),\(.y) \(.width/.scale|round)x\(.height/.scale|round)"'
+    echo $matching_monitor | geometry_from_monitor
 }
 
 # function grab_window() {
@@ -251,6 +249,10 @@ function grab_window_active() {
 #     Print "Capturing: %s\n" "${1}"
 #     echo $window | jq -r '"\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"'
 # }
+
+function geometry_from_monitor() {
+    jq -r '"\(.x),\(.y) \(.width/.scale|round)x\(.height/.scale|round)"'
+}
 
 # --------------- Trimming ---------------
 
