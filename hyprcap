@@ -423,19 +423,36 @@ function trim_slurp_border() {
 #     [[ $acted -ne 0 ]] && return 0 || return 1
 # }
 
-# function save_capture() {
-#     SAVE=1
-#     mkdir -p "$SAVEDIR"
-#     cat "$CAPTURE_FULLPATH" > "$SAVE_FULLPATH"
-#     Print "Saving in: %s\n" "$SAVE_FULLPATH"
-#     echo "$SAVE_FULLPATH"
-# }
+function save_capture() {
+    SAVE=1 # In case it was called for other reasons
 
-# function copy_capture() {
-#     CLIPBOARD=1
-#     wl-copy --type image/png < "$CAPTURE_FULLPATH"
-#     echo "$CAPTURE_FULLPATH"
-# }
+    # If output directory or filename are not set, use the default ones
+    if [ "$COMMAND" == "screenshot" ]; then
+        OUTPUT_DIR="${OUTPUT_DIR:-$DEF_SCREENSHOT_DIR}"
+        FILENAME="${FILENAME:-$DEF_SCREENSHOT_FILENAME}"
+    elif [ "$COMMAND" == "record" ]; then
+        OUTPUT_DIR="${OUTPUT_DIR:-$DEF_RECORDING_DIR}"
+        FILENAME="${FILENAME:-$DEF_RECORDING_FILENAME}"
+    fi
+    SAVE_PATH="$OUTPUT_DIR/$FILENAME"
+
+    Print -1 "Saving capture to '$SAVE_PATH'\n"
+
+    mkdir -p "$OUTPUT_DIR"
+    cp "$CAPTURE_PATH" "$SAVE_PATH"
+}
+
+function copy_capture() {
+    COPY=1 # In case it was called for other reasons
+
+    Print -1 "Copying capture to clipboard\n"
+
+    if [ "$COMMAND" == "screenshot" ]; then
+        wl-copy --type image/png < "$CAPTURE_PATH"
+    elif [ "$COMMAND" == "record" ]; then
+        NYI && exit 1 # TODO: Remove when implemented
+    fi
+}
 
 # function edit_capture() {
 #     swappy -f "$CAPTURE_FULLPATH" -o "$SAVE_FULLPATH"
@@ -667,7 +684,8 @@ SELECT_MATCH=
 SAVE=0
 OUTPUT_DIR=
 FILENAME=
-# COPY=0 # not implemented yet
+SAVE_PATH=
+COPY=0
 
 # Behavior
 # FREEZE=0 # not implemented yet
@@ -740,30 +758,8 @@ esac
 
 # ---- Post-capture ----
 
-if [ $SAVE -eq 1 ]; then
-    # If output directory or filename are not set, use the default ones
-    if [ "$COMMAND" == "screenshot" ]; then
-        OUTPUT_DIR="${OUTPUT_DIR:-$DEF_SCREENSHOT_DIR}"
-        FILENAME="${FILENAME:-$DEF_SCREENSHOT_FILENAME}"
-    elif [ "$COMMAND" == "record" ]; then
-        OUTPUT_DIR="${OUTPUT_DIR:-$DEF_RECORDING_DIR}"
-        FILENAME="${FILENAME:-$DEF_RECORDING_FILENAME}"
-    fi
+[ $SAVE -eq 1 ] && save_capture
 
-    mkdir -p "$OUTPUT_DIR"
-
-    SAVE_PATH="$OUTPUT_DIR/$FILENAME"
-    Print -1 "Saving capture to $SAVE_PATH\n"
-    mv "$CAPTURE_PATH" "$SAVE_PATH"
-fi
-
-if [ $COPY -eq 1 ]; then
-    Print -1 "Copying capture to clipboard\n"
-    if [ "$COMMAND" == "screenshot" ]; then
-        wl-copy --type image/png < "$CAPTURE_PATH"
-    elif [ "$COMMAND" == "record" ]; then
-        NYI && exit 1 # TODO: Remove when implemented
-    fi
-fi
+[ $COPY -eq 1 ] && copy_capture
 
 [ $RAW -eq 1 ] && cat "$CAPTURE_PATH"
