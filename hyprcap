@@ -30,7 +30,7 @@ Please report bugs and issues at
 https://github.com/alonso-herreros/hyprcap/issues
 
 Commands:
-! shot | screenshot        Take a screenshot (default)
+  shot | screenshot        Take a screenshot (default)
 ! rec | record             Take a screen recording
 
 A selection can be specified after the command, with the -m or --mode option,
@@ -83,7 +83,7 @@ Notification options:
                                 Default: 10 seconds.
 
 Output options:
-! -r, --raw                     Output raw capture data to stdout.
+  -r, --raw                     Output raw capture data to stdout.
   -v, --verbose                 Print extra information. Specify multiple times
                                 to increase verbosity.
   -q, --quiet                   Print less information.
@@ -121,22 +121,13 @@ function Print() {
 
 # --------------- Capture functions ---------------
 
-# function capture() {
-#     local geometry="${1}"
+function screenshot() {
+    local capture_path="$CAPTURE_PATH"
 
-#     if [ $RAW -eq 1 ]; then
-#         grim -g "${geometry}" -
-#         return 0
-#     fi
+    [ $RAW -eq 1 ] && capture_path="-"
 
-#     mkdir -p "$CACHEDIR"
-#     grim -g "${geometry}" "$CAPTURE_FULLPATH"
-
-#     [ $CLIPBOARD -eq 1 ] && copy_capture >/dev/null
-#     [ $SAVE -eq 1 ] && save_capture >/dev/null
-
-#     notify $output
-# }
+    grim -g "$GEOMETRY" "$capture_path"
+}
 
 # --------------- Geometry grabbing ---------------
 
@@ -526,7 +517,6 @@ function args() {
 
             -r | --raw)
                 RAW=1
-                NYI && exit 1 # TODO: Remove when implemented
                 ;;
             -v | --verbose)
                 VERBOSE+=1
@@ -677,7 +667,7 @@ DELAY= # Empty by default. Not the same as explicit 0.
 
 # Output
 VERBOSE=0
-# RAW=0 # not implemented yet
+RAW=0
 
 args $0 "$@"
 
@@ -709,10 +699,12 @@ if [ -n "$DELAY" ]; then
     sleep $DELAY
 fi
 
+mkdir -p "$CACHE_DIR"
+
 case "$COMMAND" in
     screenshot)
-        NYI && exit 1 # TODO: Remove when implemented
         Print -1 "Taking a screenshot of $GEOMETRY\n"
+        screenshot
         ;;
     record)
         NYI && exit 1 # TODO: Remove when implemented
