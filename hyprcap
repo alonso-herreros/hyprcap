@@ -43,7 +43,7 @@ Selection:
 
 ! window                    Select a visible window interactively.
   window:active             Select the currently focused window.
-! window:<title>            Select the first window that contains the title.
+  window:<title>            Select the first window that contains the title.
 
   region                    Select a region manually using 'slurp'.
   region:X,Y,WxH            Select the specified region.
@@ -167,8 +167,7 @@ function get_geometry() {
             if [ $SELECT_ACTIVE -eq 1 ]; then
                 geometry=$(grab_window_active)
             elif [ -n "$SELECT_MATCH" ]; then
-                NYI && exit 1 # TODO: Remove when implemented
-                geometry=$(grab_window_match $SELECT_MATCH)
+                geometry=$(grab_window_match "$SELECT_MATCH")
             else
                 NYI && exit 1 # TODO: Remove when implemented
                 geometry=$(grab_window)
@@ -244,11 +243,24 @@ function grab_window_active() {
     echo $active_window | geometry_from_window
 }
 
-# function grab_selected_window() {
-#     local window=$(hyprctl -j clients | jq --arg title "$1" -r '.[] | select(.title == $title)')
-#     Print "Capturing: %s\n" "${1}"
-#     echo $window | jq -r '"\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"'
-# }
+function grab_window_match() {
+    local title="$1"
+    local windows=$(hyprctl -j clients)
+    local matching_windows=$(echo $windows \
+        | jq --arg title "$title" -r 'map(select(.title | contains($title)))')
+    local matching_window=$(echo $matching_windows | jq -r 'first')
+
+    Print -2 "Windows: $windows\n"
+    Print -2 "Matching windows: $matching_windows\n"
+    Print -2 "First matching window: $matching_window\n"
+
+    if [ "$matching_window" = "null" ]; then
+        Print -E "Error: No window with title '$title' found.\n"
+        exit 1
+    fi
+
+    echo $matching_window | geometry_from_window
+}
 
 function geometry_from_monitor() {
     jq -r '"\(.x),\(.y) \(.width/.scale|round)x\(.height/.scale|round)"'
