@@ -84,7 +84,7 @@ Capture options:
 Notification options:
   -n, --notify                  Send a notification when capture is done.
   -N, --no-notify               Never send a notification (default).
-! -a, --actions                 Show actions in the notification (default).
+  -a, --actions                 Show actions in the notification (default).
                                 Requires --notify.
   -A, --no-actions              Don't show actions in the notification. Requires
                                 --notify.
@@ -372,9 +372,11 @@ function trim_slurp_border() {
 
 # --------------- Notifications --------------
 
-# TODO: Finish implementing this
-# readonly ACTIONS_ARGS=("-")
-
+readonly ACTIONS_ARGS=(
+    "-A" "default='Save to file'"
+    "-A" "copy='Copy to clipboard'"
+    "-A" "edit='Edit'"
+)
 function notify() {
     NOTIFY=1 # In case it was called for other reasons???
 
@@ -382,52 +384,32 @@ function notify() {
     [ $COPY -eq 1 ] && message+="Copied to the clipboard.\n"
     [ $SAVE -eq 1 ] && message+="Saved in <i>$SAVE_PATH</i>.\n"
 
+    local extra_args=""
+    [ $ACTIONS -eq 1 ] && extra_args=("${ACTIONS_ARGS[@]}")
+
     notify-send "Screenshot captured" "$message" \
         -t "$NOTIF_TIMEOUT" -a HyprCap -r $NOTIF_ID \
-        -i "$CAPTURE_PATH"
-
-    # if [ $ACTIONS -eq 1 ]; then
-    #     action=$(notify-send "Screenshot captured" \
-    #         "${message}" \
-    #         -t "$NOTIF_TIMEOUT" -i "$CAPTURE_FULLPATH" -a Hyprcap \
-    #         -h string:x-dunst-stack-tag:$DUNST_TAG \
-    #         -A default="Save to file" \
-    #         -A copy="Copy to clipboard" \
-    #         -A edit="Edit" \
-    #         2>/dev/null)
-    #     [ "$action" = "default" ] && action="save"
-    #     # If actions is invalid or none, act_on_capture fails and this stops
-    #     act_on_capture "$action" && notify
-    # else
-    #     notify-send "Screenshot captured" \
-    #         "${message}" \
-    #         -t "$NOTIF_TIMEOUT" -i "${1}" -a Hyprcap \
-    #         -h string:x-dunst-stack-tag:$DUNST_TAG
-    # fi
+        -i "$CAPTURE_PATH" "${extra_args[@]}"
 }
 
 # --------------- Post-capture actions ---------------
 
-# function act_on_capture() {
-#     local acted=0
-#     case "$1" in
-#         save)
-#             # TODO: implement choosing through an xdg-desktop-portal file dialog
-#             save_capture >/dev/null
-#             acted=1
-#             ;;
-#         copy)
-#             copy_capture >/dev/null
-#             acted=1
-#             ;;
-#         edit)
-#             edit_capture >/dev/null
-#             acted=1
-#             ;;
-#     esac
-#     # Return 0 if acted, 1 if action was invalid or none
-#     [[ $acted -ne 0 ]] && return 0 || return 1
-# }
+function act() {
+    Print -1 "Notification action requested: $1\n"
+    case "$1" in
+        save)
+            # TODO: implement choosing through an xdg-desktop-portal file dialog
+            save_capture;;
+        copy)
+            copy_capture;;
+        # edit)
+        #     edit_capture;;
+        *)
+            Print -E "Error: Unknown action '$1'.\n"
+            return 1
+            ;;
+    esac
+}
 
 function save_capture() {
     SAVE=1 # In case it was called for other reasons
@@ -698,7 +680,7 @@ DELAY= # Empty by default. Not the same as explicit 0.
 # Notifications
 NOTIFY=0
 NOTIF_TIMEOUT=10000
-# ACTIONS=1
+ACTIONS=1
 
 # Output
 VERBOSE=0
@@ -766,6 +748,13 @@ esac
 
 [ $COPY -eq 1 ] && copy_capture
 
-[ $NOTIFY -eq 1 ] && notify
+if [ $NOTIFY -eq 1 ]; then
+    while
+        action="$(notify)"
+        [ "$action" = "default" ] && action="save"
+        # If this line succeeds, the loop runs again
+        [ $ACTIONS -eq 1 -a -n "$action" ] && act "$action"
+    do true; done
+fi
 
 [ $RAW -eq 1 ] && cat "$CAPTURE_PATH"
