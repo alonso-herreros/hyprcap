@@ -5,7 +5,6 @@ readonly VERSION="None (not yet released)"
 # TODO: This is rather a tmp file than a cache file. Fix it?
 readonly CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/hyprcap"
 readonly CAPTURE_FILENAME="capture"
-readonly CAPTURE_PATH="$CACHE_DIR/$CAPTURE_FILENAME"
 
 readonly DEF_SCREENSHOT_DIR="${XDG_PICTURES_DIR:-$HOME/Pictures}/Screenshots"
 readonly DEF_RECORDING_DIR="${XDG_VIDEOS_DIR:-$HOME/Videos}/Captures"
@@ -37,7 +36,7 @@ https://github.com/alonso-herreros/hyprcap/issues
 
 Commands:
   shot | screenshot        Take a screenshot (default)
-! rec | record             Take a screen recording
+  rec | record             Take a screen recording
 
 A selection can be specified after the command, with the -m or --mode option,
 or using a dmenu-like menu if neither is specified.
@@ -70,8 +69,7 @@ Saving options:
                                   YYYY-MM-DD-hhmmss_hyprcap.<extension>
                                 where <extension> is determined by the command
                                 (e.g. png for screenshots, mp4 for recordings).
-                                The extension will determine the file format
-                                for recordings.
+                             (!)The extension will determine the file format.
   -F, --no-file                 Don't save captures to a file (default).
   -c, --copy                    Copy capture to clipboard with 'wl-copy'.
 
@@ -135,6 +133,14 @@ function screenshot() {
     local capture_path="$CAPTURE_PATH"
 
     grim -g "$GEOMETRY" "$capture_path"
+}
+
+function record() {
+    local capture_path="$CAPTURE_PATH"
+
+    # TODO: Support stopping an ongoing recording
+
+    wf-recorder -g "$GEOMETRY" -f "$capture_path" --overwrite --audio
 }
 
 # --------------- Geometry grabbing ---------------
@@ -380,6 +386,12 @@ readonly ACTIONS_ARGS=(
 function notify() {
     NOTIFY=1 # In case it was called for other reasons???
 
+    local title=""
+    case "$COMMAND" in
+        screenshot) title="Screenshot captured" ;;
+        record) title="Screen recording captured" ;;
+    esac
+
     local message=""
     [ $COPY -eq 1 ] && message+="Copied to the clipboard.\n"
     [ $SAVE -eq 1 ] && message+="Saved in <i>$SAVE_PATH</i>.\n"
@@ -387,7 +399,8 @@ function notify() {
     local extra_args=""
     [ $ACTIONS -eq 1 ] && extra_args=("${ACTIONS_ARGS[@]}")
 
-    notify-send "Screenshot captured" "$message" \
+    # TODO: Create a thumbnail for video recordings
+    notify-send "$title" "$message" \
         -t "$NOTIF_TIMEOUT" -a HyprCap -r $NOTIF_ID \
         -i "$CAPTURE_PATH" "${extra_args[@]}"
 }
@@ -659,6 +672,9 @@ function parse_selection() {
 # by name
 echo -ne "\033]0;HyprCap\007"
 
+# Not with constants because it can change
+CAPTURE_PATH="$CACHE_DIR/$CAPTURE_FILENAME"
+
 # ---- Options and defaults ----
 
 # Selection
@@ -732,8 +748,10 @@ case "$COMMAND" in
         screenshot
         ;;
     record)
-        NYI && exit 1 # TODO: Remove when implemented
+        # TODO: Support selecting format
+        CAPTURE_PATH="$CAPTURE_PATH.mp4" # Ensure the file has the right extension
         Print -1 "Taking a screen recording of $GEOMETRY\n"
+        record
         ;;
     # TODO: Maybe add a simple command to print the geometry
     *)
