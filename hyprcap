@@ -76,7 +76,7 @@ Saving options:
 Capture options:
   -d, --delay <time>            How long to delay starting the capture after
                                 selection is done in seconds.
-! -z, --freeze                  Freeze the screen on initialization. Only
+  -z, --freeze                  Freeze the screen on initialization. Only
                                 available for screenshots.
 
 Notification options:
@@ -461,25 +461,37 @@ function copy_capture() {
 
 # --------------- Freezing ---------------
 
-# TODO: Improve this or something
-# function checkRunning() {
-#     sleep 1
-#     while [[ 1 == 1 ]]; do
-#         if [[ $(pgrep slurp | wc -m) == 0 ]]; then
-#             pkill hyprpicker
-#             exit
-#         fi
-#     done
-# }
+function unfreeze() {
+    Print -1 "Unfreezing the screen\n"
 
-# TODO: Ensure this implementation works.
-# function freeze() {
-#     if [ $FREEZE -eq 1 ] && [ "$(command -v "hyprpicker")" ] >/dev/null 2>&1; then
-#         hyprpicker -r -z &
-#         sleep 0.2
-#         # HYPRPICKER_PID=$!
-#     fi
-# }
+    if [ -n "$HYPRPICKER_PID" ]; then
+        kill "$HYPRPICKER_PID"
+        unset HYPRPICKER_PID
+    else # In case we messed up
+        Print -E "Error: lost the hyprpicker PID, using pkill.\n"
+        pkill hyprpicker
+        exit 1
+    fi
+}
+
+function freeze() {
+    FREEZE=1 # In case it was called for other reasons
+    Print -1 "Freezing the screen\n"
+
+    if [ -n "$HYPRPICKER_PID" ]; then
+        Print -E "Error: hyprpicker is already running.\n"
+        exit 1
+    fi
+
+    if command -v hyprpicker >/dev/null; then
+        hyprpicker -rzq &
+        HYPRPICKER_PID=$!
+        sleep 0.2
+    else
+        Print -E "Error: hyprpicker is not installed. Cannot freeze.\n"
+        exit 1
+    fi
+}
 
 # =============== Argument parsing ===============
 
@@ -522,7 +534,6 @@ function args() {
                 shift;;
             -z | --freeze)
                 FREEZE=1
-                NYI && exit 1 # TODO: Remove when implemented
                 ;;
 
             -n | --notify)
@@ -709,7 +720,7 @@ Print -1 "Command selected: $COMMAND\n"
 
 # ---- Init ----
 
-# TODO: Call freeze around here
+[ $FREEZE -eq 1 ] && freeze
 
 # [ -z $OPTION ] && prompt_options
 
@@ -760,6 +771,8 @@ case "$COMMAND" in
 esac
 
 # ---- Post-capture ----
+
+[ $FREEZE -eq 1 ] && unfreeze
 
 [ $SAVE -eq 1 ] && save_capture
 
