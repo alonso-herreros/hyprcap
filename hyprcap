@@ -533,7 +533,6 @@ function args() {
                 ;;
             -a | --actions)
                 ACTIONS=1
-                NYI && exit 1 # TODO: Remove when implemented
                 ;;
             -A | --no-actions)
                 ACTIONS=0
