@@ -755,13 +755,21 @@ mkdir -p "$CACHE_DIR"
 case "$COMMAND" in
     screenshot)
         Print -1 "Taking a screenshot of $GEOMETRY\n"
-        screenshot
+        if ! screenshot; then
+            # If the screenshot command fails, exit with an error
+            Print -E "Fatal: Failed to take a screenshot.\n"
+            exit 1
+        fi
         ;;
     record)
         # TODO: Support selecting format
         CAPTURE_PATH="$CAPTURE_PATH.mp4" # Ensure the file has the right extension
         Print -1 "Taking a screen recording of $GEOMETRY\n"
-        record
+        if ! record; then
+            # If the recording command fails, exit with an error
+            Print -E "Fatal: Failed to take a screen recording.\n"
+            exit 1
+        fi
         ;;
     # TODO: Maybe add a simple command to print the geometry
     *)
