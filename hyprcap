@@ -5,6 +5,7 @@ readonly VERSION="None (not yet released)"
 # TODO: This is rather a tmp file than a cache file. Fix it?
 readonly CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/hyprcap"
 readonly CAPTURE_FILENAME="capture"
+readonly REC_PID_PATH="${XDG_RUNTIME_DIR:-/run}/hyprcap_rec.pid"
 
 readonly DEF_SCREENSHOT_DIR="${XDG_PICTURES_DIR:-$HOME/Pictures}/Screenshots"
 readonly DEF_RECORDING_DIR="${XDG_VIDEOS_DIR:-$HOME/Videos}/Captures"
@@ -35,8 +36,10 @@ Please report bugs and issues at
 https://github.com/alonso-herreros/hyprcap/issues
 
 Commands:
-  shot | screenshot        Take a screenshot (default)
-  rec | record             Take a screen recording
+  shot | screenshot            Take a screenshot (default)
+! rec | record                 Toggle screen recording
+! rec-start | record-start     Start a screen recording
+! rec-stop | record-stop       Stop a screen recording
 
 A selection can be specified after the command, with the -m or --mode option,
 or using a dmenu-like menu if neither is specified.
@@ -135,12 +138,28 @@ function screenshot() {
     grim -g "$GEOMETRY" "$capture_path"
 }
 
-function record() {
+function record_toggle() {
+    Print -1 "Toggling screen recording.\n"
+
+    if [ -r "$REC_PID_PATH" ]; then
+        Print -2 "Recording in progress found. Stopping it.\n"
+        record_stop
+    else
+        Print -2 "No recording in progress found. Starting a new one.\n"
+        record_start
+    fi
+}
+
+function record_start() {
+    Print -1 "Starting screen recording of $GEOMETRY\n"
     local capture_path="$CAPTURE_PATH"
 
-    # TODO: Support stopping an ongoing recording
 
     wf-recorder -g "$GEOMETRY" -f "$capture_path" --overwrite --audio
+}
+
+function record_stop() {
+    NYI && exit 1 # TODO: Remove when implemented
 }
 
 # --------------- Geometry grabbing ---------------
@@ -606,6 +625,12 @@ function parse_command() {
         rec | record)
             echo "record"
             ;;
+        rec-start | record-start)
+            echo "record-start"
+            ;;
+        rec-stop | record-stop)
+            echo "record-stop"
+            ;;
         *)
             Print -E "Fatal: Unknown command '$1'\n"
             exit 1
@@ -761,13 +786,24 @@ case "$COMMAND" in
             exit 1
         fi
         ;;
-    record)
+    record | record-toggle)
         # TODO: Support selecting format
         CAPTURE_PATH="$CAPTURE_PATH.mp4" # Ensure the file has the right extension
-        Print -1 "Taking a screen recording of $GEOMETRY\n"
-        if ! record; then
-            # If the recording command fails, exit with an error
-            Print -E "Fatal: Failed to take a screen recording.\n"
+        if ! record_toggle; then
+            Print -E "Fatal: Failed to toggle screen recording.\n"
+            exit 1
+        fi
+        ;;
+    record-start)
+        CAPTURE_PATH="$CAPTURE_PATH.mp4" # Ensure the file has the right extension
+        if ! record_start; then
+            Print -E "Fatal: Failed to start screen recording.\n"
+            exit 1
+        fi
+        ;;
+    record-stop)
+        if ! record_stop; then
+            Print -E "Fatal: Failed to stop screen recording.\n"
             exit 1
         fi
         ;;
