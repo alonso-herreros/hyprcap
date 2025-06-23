@@ -703,7 +703,7 @@ SAVE_PATH=
 COPY=0
 
 # Behavior
-# FREEZE=0 # not implemented yet
+FREEZE=0
 DELAY= # Empty by default. Not the same as explicit 0.
 
 # Notifications
