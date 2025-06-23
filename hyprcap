@@ -330,15 +330,18 @@ function trim_slurp_border() {
     echo "$x,$y ${width}x${height}"
 }
 
-# function trim() {
-#     Print "Geometry: %s\n" "${1}"
-#     local geometry="${1}"
-#     local xy_str=$(echo "${geometry}" | cut -d' ' -f1)
-#     local wh_str=$(echo "${geometry}" | cut -d' ' -f2)
-#     local x=$(echo "${xy_str}" | cut -d',' -f1)
-#     local y=$(echo "${xy_str}" | cut -d',' -f2)
-#     local width=$(echo "${wh_str}" | cut -dx -f1)
-#     local height=$(echo "${wh_str}" | cut -dx -f2)
+# Grim can capture multiple monitors and in even outside of them. However,
+# wf-recorder cannot and fails. This should trim the geometry to one monitor.
+# function trim_to_monitor() {
+#     Print "Trimming '$1' to fit in one monitor\n"
+#     local geometry="$1"
+
+#     local xy_str=${geometry% *} # Get the first part (X,Y)
+#     local wh_str=${geometry#* } # Get the second part (WxH)
+#     local x=${xy_str%,*}        # Get the X coordinate
+#     local y=${xy_str#*,}        # Get the Y coordinate
+#     local width=${wh_str%x*}    # Get the width
+#     local height=${wh_str#*x}   # Get the height
 
 #     local max_width=$(hyprctl monitors -j | jq -r '[.[] | if (.transform % 2 == 0) then (.x + .width) else (.x + .height) end] | max')
 #     local max_height=$(hyprctl monitors -j | jq -r '[.[] | if (.transform % 2 == 0) then (.y + .height) else (.y + .width) end] | max')
