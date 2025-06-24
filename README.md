@@ -20,9 +20,26 @@ command line arguments.
 
 ## Installation
 
-Only manual installation is possible at the moment.
+### Arch Linux
 
-### Dependencies
+This utility is available in the [AUR
+(git)](https://aur.archlinux.org/packages/hyprcap-git). You can install it
+using an AUR helper like `yay`:
+
+```bash
+yay -S hyprcap-git
+```
+
+### Manual installation
+
+#### Dependencies
+
+Install the required dependencies using your package manager. For example, on
+Arch Linux, you can use:
+
+```bash
+sudo pacman -S wf-recorder grim slurp hyprland jq wl-clipboard hyprpicker libnotify
+```
 
 The following dependencies are **required** to run HyprCap:
 
@@ -39,7 +56,7 @@ The following extras are not essential, but required for some features
 - `libnotify` + a notification daemon to get notified
 <!-- - dmenu or equivalent (to use an interactive menu) -->
 
-### Manual installation
+#### Copy the script
 
 Copy the `hyprcap` script to a folder in your `PATH`:
 
