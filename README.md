@@ -1,5 +1,9 @@
 # HyprCap
 
+<!-- [![AUR version][aur-shield]][aur-link] -->
+[![AUR git version][aur-git-shield]][aur-link]
+[![Latest GitHub release][release-shield]][release-link]
+
 HyprCap is a utility to easily capture screenshots and screen recordings on
 [Hyprland](https://hyprland.org/).
 
@@ -106,3 +110,10 @@ Contributions are welcome! You can help by:
 
 This project is based on [Gustash's
 Hyprshot](https://github.com/Gustash/Hyprshot)
+
+[aur-shield]: https://img.shields.io/aur/version/hyprcap?label=hyprshot&logo=arch+linux
+[aur-link]: https://aur.archlinux.org/packages/hyprshot
+[aur-git-shield]: https://img.shields.io/aur/version/hyprcap-git?label=hyprshot-git&logo=arch+linux
+[aur-git-link]: https://aur.archlinux.org/packages/hyprshot-git
+[release-shield]: https://img.shields.io/github/v/release/alonso-herreros/hyprcap?color=green&logo=github
+[release-link]: https://github.com/alonso-herreros/hyprcap/releases/latest
