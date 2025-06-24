@@ -1,7 +1,7 @@
 # HyprCap
 
 <!-- [![AUR version][aur-shield]][aur-link] -->
-[![AUR git version][aur-git-shield]][aur-link]
+[![AUR git version][aur-git-shield]][aur-git-link]
 [![Latest GitHub release][release-shield]][release-link]
 
 HyprCap is a utility to easily capture screenshots and screen recordings on
