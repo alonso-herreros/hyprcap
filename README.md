@@ -1,6 +1,6 @@
 # HyprCap
 
-<!-- [![AUR version][aur-shield]][aur-link] -->
+[![AUR version][aur-shield]][aur-link]
 [![AUR git version][aur-git-shield]][aur-git-link]
 [![Latest GitHub release][release-shield]][release-link]
 
@@ -128,9 +128,9 @@ Contributions are welcome! You can help by:
 This project is based on [Gustash's
 Hyprshot](https://github.com/Gustash/Hyprshot)
 
-[aur-shield]: https://img.shields.io/aur/version/hyprcap?label=hyprshot&logo=arch+linux
-[aur-link]: https://aur.archlinux.org/packages/hyprshot
-[aur-git-shield]: https://img.shields.io/aur/version/hyprcap-git?label=hyprshot-git&logo=arch+linux
-[aur-git-link]: https://aur.archlinux.org/packages/hyprshot-git
+[aur-shield]: https://img.shields.io/aur/version/hyprcap?label=hyprcap&logo=arch+linux
+[aur-link]: https://aur.archlinux.org/packages/hyprcap
+[aur-git-shield]: https://img.shields.io/aur/version/hyprcap-git?label=hyprcap-git&logo=arch+linux
+[aur-git-link]: https://aur.archlinux.org/packages/hyprcap-git
 [release-shield]: https://img.shields.io/github/v/release/alonso-herreros/hyprcap?color=green&logo=github
 [release-link]: https://github.com/alonso-herreros/hyprcap/releases/latest
