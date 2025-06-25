@@ -15,19 +15,18 @@ command line arguments.
 
 > [!WARNING]
 >
-> This project is in early development.  You can report issues on the [GitHub
+> This project is in active development.  You can report issues on the [GitHub
 > repository](https://alonso-herreros/hyprcap/issues).
 
 ## Installation
 
 ### Arch Linux
 
-This utility is available in the [AUR
-(git)](https://aur.archlinux.org/packages/hyprcap-git). You can install it
+This utility is available in the [AUR](https://aur.archlinux.org/packages/hyprcap). You can install it
 using an AUR helper like `yay`:
 
 ```bash
-yay -S hyprcap-git
+yay -S hyprcap
 ```
 
 ### Manual installation
