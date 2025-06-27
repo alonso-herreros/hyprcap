@@ -147,15 +147,21 @@ function record_start() {
         return 1
     fi
 
-    # Instead of forking, we're saving the PID of the running HyprCap. When a
-    # SIGINT arrives, it will be sent to wf-recorder and then the HyprCap will
-    # continue execution (notify, save, etc.)
-    echo "$$" > "$REC_PID_PATH"
+    # We send this to the background so we can store its PID in a file.
+    # Otherwise, we wouldn't be able to gracefully stop it from the outside.
+    wf-recorder -g "$GEOMETRY" -f "$capture_path" --overwrite --audio &
+    local rec_pid=$!
+    echo "$rec_pid" > "$REC_PID_PATH"
 
-    wf-recorder -g "$GEOMETRY" -f "$capture_path" --overwrite --audio
+    # Then we wait for the recording to finish. Then we can move on to
+    # operations (notifications, saving, etc.)
+    waitpid "$rec_pid"
+    local exit_code=$?
 
     # Once wf-recorder exits, we can remove the PID file
     rm "$REC_PID_PATH" 2>/dev/null
+    # And return the exit code from the recording command
+    return $exit_code
 }
 
 function record_stop() {
