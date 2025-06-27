@@ -613,14 +613,15 @@ function args() {
     # use it as the selection
     [ -z "$selection" -a -n "$2" ] && selection="$2"
 
-    # If no selection is done yet, fail
+    # Handle no selection
     # TODO: Remove this when dmenu-based selection is implemented
-    if [ -z "$selection" ]; then
+    if [ -z "$selection" -a "$COMMAND" != "record-stop" ]; then
         Print -E "Fatal: No selection specified. Use --help for help.\n"
         exit 1
     fi
 
-    parse_selection "$selection" # Errors and exit if selection is invalid
+    # Parse into a standard format
+    [ -n "$selection" ] && parse_selection "$selection"
 }
 
 function parse_command() {
@@ -673,8 +674,8 @@ function parse_selection() {
             SELECTION="${selection%,*} ${selection#*,*,}"
             ;;
         *)
-            Print -E "Fatal: Unknown selection '$1'\n"
-            exit 1;;
+            Print -E "Error: Unknown selection '$1'\n"
+            return 1;;
     esac
 }
 
