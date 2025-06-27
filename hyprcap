@@ -138,18 +138,6 @@ function screenshot() {
     grim -g "$GEOMETRY" "$capture_path"
 }
 
-function record_toggle() {
-    Print -1 "Toggling screen recording.\n"
-
-    if [ -r "$REC_PID_PATH" ]; then
-        Print -2 "Recording in progress found. Stopping it.\n"
-        record_stop
-    else
-        Print -2 "No recording in progress found. Starting a new one.\n"
-        record_start
-    fi
-}
-
 function record_start() {
     Print -1 "Starting screen recording of $GEOMETRY\n"
     local capture_path="$CAPTURE_PATH"
@@ -635,7 +623,8 @@ function parse_command() {
             echo "screenshot"
             ;;
         rec | record)
-            echo "record"
+            Print -1 "Resolving recording toggle.\n"
+            [ -f "$REC_PID_PATH" ] && echo "record-stop" || echo "record-start"
             ;;
         rec-start | record-start)
             echo "record-start"
@@ -798,15 +787,7 @@ case "$COMMAND" in
             exit 1
         fi
         ;;
-    record | record-toggle)
-        # TODO: Support selecting format
-        CAPTURE_PATH="$CAPTURE_PATH.mp4" # Ensure the file has the right extension
-        if ! record_toggle; then
-            Print -E "Fatal: Failed to toggle screen recording.\n"
-            exit 1
-        fi
-        ;;
-    record-start)
+    record | record-start)
         CAPTURE_PATH="$CAPTURE_PATH.mp4" # Ensure the file has the right extension
         if ! record_start; then
             Print -E "Fatal: Failed to start screen recording.\n"
