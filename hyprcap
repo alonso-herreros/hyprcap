@@ -155,7 +155,9 @@ function record_start() {
 
     # Then we wait for the recording to finish. Then we can move on to
     # operations (notifications, saving, etc.)
+    Print -1 "Waiting for process $rec_pid to finish...\n"
     waitpid "$rec_pid"
+    Print -1 "Process $rec_pid finished.\n"
     local exit_code=$?
 
     # Once wf-recorder exits, we can remove the PID file
@@ -165,7 +167,19 @@ function record_start() {
 }
 
 function record_stop() {
-    NYI && exit 1 # TODO: Remove when implemented
+    Print -1 "Stopping screen recording\n"
+
+    if [ ! -r "$REC_PID_PATH" ]; then
+        Print -E "Error: No screen recording PID found.\n"
+        return 1
+    fi
+
+    local rec_pid=$(cat "$REC_PID_PATH")
+
+    if ! kill -INT "$rec_pid"; then
+        Print -E "Error: Failed to send a stop signal.\n"
+        return 1
+    fi
 }
 
 # --------------- Geometry grabbing ---------------
