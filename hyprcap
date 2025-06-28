@@ -1,4 +1,7 @@
 #!/usr/bin/env sh
+# TODO: Fix ctr+C not killing the recorder process (only kills the script,
+# which is actually running `waitpid`)
+# TODO: Implement skipping geometry resolution for recording stop
 
 readonly VERSION="None (not yet released)"
 
