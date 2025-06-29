@@ -5,6 +5,7 @@ readonly VERSION="None (not yet released)"
 # TODO: This is rather a tmp file than a cache file. Fix it?
 readonly CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/hyprcap"
 readonly CAPTURE_FILENAME="capture"
+readonly REC_PID_PATH="${XDG_RUNTIME_DIR:-/run}/hyprcap_rec.pid"
 
 readonly DEF_SCREENSHOT_DIR="${XDG_PICTURES_DIR:-$HOME/Pictures}/Screenshots"
 readonly DEF_RECORDING_DIR="${XDG_VIDEOS_DIR:-$HOME/Videos}/Captures"
@@ -35,8 +36,10 @@ Please report bugs and issues at
 https://github.com/alonso-herreros/hyprcap/issues
 
 Commands:
-  shot | screenshot        Take a screenshot (default)
-  rec | record             Take a screen recording
+  shot | screenshot            Take a screenshot (default)
+  rec | record                 Toggle screen recording
+  rec-start | record-start     Start a screen recording
+  rec-stop | record-stop       Stop a screen recording
 
 A selection can be specified after the command, with the -m or --mode option,
 or using a dmenu-like menu if neither is specified.
@@ -99,9 +102,10 @@ Output options:
   -h, --help                    Show this help message and exit.
 
 Examples:
-  Record current monitor                \`hyprcap rec monitor:active\`
+  Toggle recording current monitor      \`hyprcap rec monitor:active\`
   Screenshot a window (interactive)     \`hyprcap shot window\`
-  Record a specific region              \`hyprcap -m output -m DP-1\`
+  Toggle recording a specific region    \`hyprcap rec region:100,100,400x300\`
+  Stop an ongoing recording             \`hyprcap rec-stop\`
 EOF
 }
 
@@ -135,12 +139,55 @@ function screenshot() {
     grim -g "$GEOMETRY" "$capture_path"
 }
 
-function record() {
+function record_start() {
+    Print -1 "Starting screen recording of $GEOMETRY\n"
     local capture_path="$CAPTURE_PATH"
 
-    # TODO: Support stopping an ongoing recording
+    if [ -r "$REC_PID_PATH" ]; then
+        Print -E "Error: Screen recording is already in progress.\n"
+        return 1
+    fi
 
-    wf-recorder -g "$GEOMETRY" -f "$capture_path" --overwrite --audio
+    # We send this to the background so we can store its PID in a file.
+    # Otherwise, we wouldn't be able to gracefully stop it from the outside.
+    wf-recorder -g "$GEOMETRY" -f "$capture_path" --overwrite --audio &
+    local rec_pid=$!
+    echo "$rec_pid" > "$REC_PID_PATH"
+
+    # This lets the shell pass the SIGINT signal to the recording process
+    # instead of getting killed while waiting.
+    Print -1 "Setting up SIGINT trap.\n"
+    trap 'record_stop' INT
+
+    # Then we wait for the recording to finish. Then we can move on to
+    # operations (notifications, saving, etc.)
+    Print -1 "Waiting for process $rec_pid to finish...\n"
+    wait "$rec_pid"
+    Print -1 "Process $rec_pid finished.\n"
+    local exit_code=$?
+
+    # Once wf-recorder exits, we can remove the PID file
+    rm "$REC_PID_PATH" 2>/dev/null
+    # And return the exit code from the recording command
+    return $exit_code
+}
+
+function record_stop() {
+    Print -1 "Stopping screen recording\n"
+
+    trap - INT # Remove the SIGINT trap
+
+    if [ ! -r "$REC_PID_PATH" ]; then
+        Print -E "Error: No screen recording PID found.\n"
+        return 1
+    fi
+
+    local rec_pid=$(cat "$REC_PID_PATH")
+
+    if ! kill -INT "$rec_pid"; then
+        Print -E "Error: Failed to send a stop signal.\n"
+        return 1
+    fi
 }
 
 # --------------- Geometry grabbing ---------------
@@ -591,14 +638,15 @@ function args() {
     # use it as the selection
     [ -z "$selection" -a -n "$2" ] && selection="$2"
 
-    # If no selection is done yet, fail
+    # Handle no selection
     # TODO: Remove this when dmenu-based selection is implemented
-    if [ -z "$selection" ]; then
+    if [ -z "$selection" -a "$COMMAND" != "record-stop" ]; then
         Print -E "Fatal: No selection specified. Use --help for help.\n"
         exit 1
     fi
 
-    parse_selection "$selection" # Errors and exit if selection is invalid
+    # Parse into a standard format
+    [ -n "$selection" ] && parse_selection "$selection"
 }
 
 function parse_command() {
@@ -607,7 +655,14 @@ function parse_command() {
             echo "screenshot"
             ;;
         rec | record)
-            echo "record"
+            Print -1 "Resolving recording toggle.\n"
+            [ -f "$REC_PID_PATH" ] && echo "record-stop" || echo "record-start"
+            ;;
+        rec-start | record-start)
+            echo "record-start"
+            ;;
+        rec-stop | record-stop)
+            echo "record-stop"
             ;;
         *)
             Print -E "Fatal: Unknown command '$1'\n"
@@ -644,8 +699,8 @@ function parse_selection() {
             SELECTION="${selection%,*} ${selection#*,*,}"
             ;;
         *)
-            Print -E "Fatal: Unknown selection '$1'\n"
-            exit 1;;
+            Print -E "Error: Unknown selection '$1'\n"
+            return 1;;
     esac
 }
 
@@ -721,6 +776,16 @@ args $0 "$@"
 Print -1 "Running HyprCap version $VERSION\n"
 Print -1 "Command selected: $COMMAND\n"
 
+# ---- Early exit commands ----
+if [ "$COMMAND" = "record-stop" ]; then
+    Print -1 "Stopping recording...\n"
+    if ! record_stop; then
+        Print -E "Fatal: Failed to stop screen recording.\n"
+        exit 1
+    fi
+    exit 0
+fi
+
 # ---- Init ----
 
 [ $FREEZE -eq 1 ] && freeze
@@ -764,13 +829,10 @@ case "$COMMAND" in
             exit 1
         fi
         ;;
-    record)
-        # TODO: Support selecting format
+    record | record-start)
         CAPTURE_PATH="$CAPTURE_PATH.mp4" # Ensure the file has the right extension
-        Print -1 "Taking a screen recording of $GEOMETRY\n"
-        if ! record; then
-            # If the recording command fails, exit with an error
-            Print -E "Fatal: Failed to take a screen recording.\n"
+        if ! record_start; then
+            Print -E "Fatal: Screen recording failed.\n"
             exit 1
         fi
         ;;

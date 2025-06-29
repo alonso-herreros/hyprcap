@@ -98,12 +98,15 @@ You can add the various modes as keybindings in your Hyprland config like so:
 
 ...
 
-# Capture a region
-bind = $MOD SHFIT, R, exec, hyprcap shot region
-# Capture current window
-bind = $MOD SHIFT ALT, R, exec, hyprcap shot window:active
-# Open interactive capture menu (not yet implemented)
-# bind = $MOD SHIFT CTRL, R, exec, hyprcap
+# Screenshot a region
+bind = $MOD SHIFT, S,     exec, hyprcap shot region -z -c -n
+# Screenshot current window
+bind = $MOD SHIFT ALT, S, exec, hyprcap shot window:active -z -c -n
+
+# Toggle recording a region
+bind = $MOD SHIFT, R,     exec, hyprcap rec region -c -n
+# Toggle recording current window
+bind = $MOD SHIFT ALT, R, exec, hyprcap rec window:active -c -n
 ```
 
 ### Save location
