@@ -161,7 +161,7 @@ function record_start() {
     # Then we wait for the recording to finish. Then we can move on to
     # operations (notifications, saving, etc.)
     Print -1 "Waiting for process $rec_pid to finish...\n"
-    waitpid "$rec_pid"
+    wait "$rec_pid"
     Print -1 "Process $rec_pid finished.\n"
     local exit_code=$?
 
