@@ -40,9 +40,9 @@ https://github.com/alonso-herreros/hyprcap/issues
 
 Commands:
   shot | screenshot            Take a screenshot (default)
-! rec | record                 Toggle screen recording
-! rec-start | record-start     Start a screen recording
-! rec-stop | record-stop       Stop a screen recording
+  rec | record                 Toggle screen recording
+  rec-start | record-start     Start a screen recording
+  rec-stop | record-stop       Stop a screen recording
 
 A selection can be specified after the command, with the -m or --mode option,
 or using a dmenu-like menu if neither is specified.
