@@ -647,6 +647,15 @@ function args() {
 
     # Parse into a standard format
     [ -n "$selection" ] && parse_selection "$selection"
+
+    # -- Check option compatibility --
+    case "$COMMAND" in rec*)
+        # Freeze is not compatible with recording
+        if [ $FREEZE -eq 1 ]; then
+            Print -E "Warning: Cannot freeze the screen while recording.\n"
+            FREEZE=0
+        fi
+    esac
 }
 
 function parse_command() {
