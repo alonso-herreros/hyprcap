@@ -1,6 +1,4 @@
 #!/usr/bin/env sh
-# TODO: Fix ctr+C not killing the recorder process (only kills the script,
-# which is actually running `waitpid`)
 
 readonly VERSION="None (not yet released)"
 
@@ -155,6 +153,11 @@ function record_start() {
     local rec_pid=$!
     echo "$rec_pid" > "$REC_PID_PATH"
 
+    # This lets the shell pass the SIGINT signal to the recording process
+    # instead of getting killed while waiting.
+    Print -1 "Setting up SIGINT trap.\n"
+    trap 'record_stop' INT
+
     # Then we wait for the recording to finish. Then we can move on to
     # operations (notifications, saving, etc.)
     Print -1 "Waiting for process $rec_pid to finish...\n"
@@ -170,6 +173,8 @@ function record_start() {
 
 function record_stop() {
     Print -1 "Stopping screen recording\n"
+
+    trap - INT # Remove the SIGINT trap
 
     if [ ! -r "$REC_PID_PATH" ]; then
         Print -E "Error: No screen recording PID found.\n"
