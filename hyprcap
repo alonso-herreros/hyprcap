@@ -1,7 +1,6 @@
 #!/usr/bin/env sh
 # TODO: Fix ctr+C not killing the recorder process (only kills the script,
 # which is actually running `waitpid`)
-# TODO: Implement skipping geometry resolution for recording stop
 
 readonly VERSION="None (not yet released)"
 
@@ -768,6 +767,16 @@ args $0 "$@"
 Print -1 "Running HyprCap version $VERSION\n"
 Print -1 "Command selected: $COMMAND\n"
 
+# ---- Early exit commands ----
+if [ "$COMMAND" = "record-stop" ]; then
+    Print -1 "Stopping recording...\n"
+    if ! record_stop; then
+        Print -E "Fatal: Failed to stop screen recording.\n"
+        exit 1
+    fi
+    exit 0
+fi
+
 # ---- Init ----
 
 [ $FREEZE -eq 1 ] && freeze
@@ -815,12 +824,6 @@ case "$COMMAND" in
         CAPTURE_PATH="$CAPTURE_PATH.mp4" # Ensure the file has the right extension
         if ! record_start; then
             Print -E "Fatal: Failed to start screen recording.\n"
-            exit 1
-        fi
-        ;;
-    record-stop)
-        if ! record_stop; then
-            Print -E "Fatal: Failed to stop screen recording.\n"
             exit 1
         fi
         ;;
