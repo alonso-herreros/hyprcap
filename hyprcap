@@ -84,7 +84,8 @@ Capture options:
 
 Notification options:
   -n, --notify                  Send a notification when capture is done.
-  -N, --no-notify               Never send a notification (default).
+                                (default).
+  -N, --no-notify               Don't send notifications.
   -a, --actions                 Show actions in the notification (default).
                                 Requires --notify.
   -A, --no-actions              Don't show actions in the notification. Requires
@@ -771,7 +772,7 @@ FREEZE=0
 DELAY= # Empty by default. Not the same as explicit 0.
 
 # Notifications
-NOTIFY=0
+NOTIFY=1
 NOTIF_TIMEOUT=10000
 ACTIONS=1
 
