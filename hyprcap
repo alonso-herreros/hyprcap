@@ -102,9 +102,10 @@ Output options:
   -h, --help                    Show this help message and exit.
 
 Examples:
-  Record current monitor                \`hyprcap rec monitor:active\`
+  Toggle recording current monitor      \`hyprcap rec monitor:active\`
   Screenshot a window (interactive)     \`hyprcap shot window\`
-  Record a specific region              \`hyprcap -m output -m DP-1\`
+  Toggle recording a specific region    \`hyprcap rec region:100,100,400x300\`
+  Stop an ongoing recording             \`hyprcap rec-stop\`
 EOF
 }
 
@@ -828,7 +829,7 @@ case "$COMMAND" in
     record | record-start)
         CAPTURE_PATH="$CAPTURE_PATH.mp4" # Ensure the file has the right extension
         if ! record_start; then
-            Print -E "Fatal: Failed to start screen recording.\n"
+            Print -E "Fatal: Screen recording failed.\n"
             exit 1
         fi
         ;;
