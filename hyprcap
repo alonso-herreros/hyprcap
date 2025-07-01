@@ -29,9 +29,6 @@ Usage: hyprcap [options...] <command> [[-s] <selection>]
 HyprCap is a utility to easily capture screenshots and screen recordings on
 Hyprland.
 
-NOTE: HyprCap is still in early development. Options marked with an exclamation
-mark (!) are not implemented but are planned.
-
 Please report bugs and issues at
 https://github.com/alonso-herreros/hyprcap/issues
 
@@ -72,7 +69,6 @@ Saving options:
                                   YYYY-MM-DD-hhmmss_hyprcap.<extension>
                                 where <extension> is determined by the command
                                 (e.g. png for screenshots, mp4 for recordings).
-                             (!)The extension will determine the file format.
   -F, --no-file                 Don't save captures to a file (default).
   -c, --copy                    Copy capture to clipboard with 'wl-copy'.
 
