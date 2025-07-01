@@ -13,11 +13,6 @@ command line arguments.
 <!-- It allows selecting windows, regions and monitors with your mouse, a -->
 <!-- `dmenu`-like program, or with command line arguments. -->
 
-> [!WARNING]
->
-> This project is in active development.  You can report issues on the [GitHub
-> repository](https://alonso-herreros/hyprcap/issues).
-
 ## Installation
 
 ### Arch Linux
