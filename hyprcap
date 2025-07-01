@@ -33,7 +33,7 @@ Please report bugs and issues at
 https://github.com/alonso-herreros/hyprcap/issues
 
 Commands:
-  shot | screenshot            Take a screenshot (default)
+  shot | screenshot            Take a screenshot
   rec | record                 Toggle screen recording
   rec-start | record-start     Start a screen recording
   rec-stop | record-stop       Stop a screen recording
