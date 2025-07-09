@@ -635,13 +635,6 @@ function args() {
     # use it as the selection
     [ -z "$selection" -a -n "$2" ] && selection="$2"
 
-    # Handle no selection
-    # TODO: Remove this when dmenu-based selection is implemented
-    if [ -z "$selection" -a "$COMMAND" != "record-stop" ]; then
-        Print -E "Fatal: No selection specified. Use --help for help.\n"
-        exit 1
-    fi
-
     # Parse into a standard format
     [ -n "$selection" ] && parse_selection "$selection"
 
@@ -710,33 +703,39 @@ function parse_selection() {
     esac
 }
 
-# function prompt_options() {
-#     visible_windows=$(list_geometry)
+function prompt_selection() {
+    visible_windows=$(list_geometry)
 
-#     dmenu_text=$'Region\nActive monitor\nMonitor\nActive window\nWindow\n'
-#     dmenu_text+=$(echo $visible_windows | jq -r '"Window:\t\(.title)"')
+    dmenu_text=$'Region\nActive monitor\nMonitor\nActive window\nWindow\n'
+    # dmenu_text+=$(echo $visible_windows | jq -r '"Window:\t\(.title)"')
 
-#     option_name=$(echo "$dmenu_text" | $DMENU_COMMAND)
+    option_name=$(echo "$dmenu_text" | $DMENU_COMMAND)
 
-#     case "$option_name" in
-#         Active*) # Current monitor or window
-#             CURRENT=1
-#             ;;&
-#         *[Mm]onitor)
-#             OPTION=output
-#             ;;
-#         *[Ww]indow)
-#             OPTION=window
-#             ;;
-#         Region)
-#             OPTION=region
-#             ;;
-#         *)
-#             parse_mode "$option_name"
-#             ;;
-#     esac
-#     sleep 0.1; # Because sometimes it takes just a moment to fade out
-# }
+    if [ $? -ne 0 ]; then
+        Print -E "Error: No selection made.\n"
+        return 1
+    fi
+
+    case "$option_name" in Active*) # Current monitor or window
+        SELECT_ACTIVE=1
+        ;;
+    esac
+    case "$option_name" in
+        *[Mm]onitor)
+            SELECTION=monitor
+            ;;
+        *[Ww]indow)
+            SELECTION=window
+            ;;
+        Region)
+            SELECTION=region
+            ;;
+        # *)
+        #     parse_mode "$option_name"
+        #     ;;
+    esac
+    sleep 0.1; # Because sometimes it takes just a moment to fade out
+}
 
 # =============== Main flow ===============
 
@@ -796,7 +795,13 @@ fi
 
 [ $FREEZE -eq 1 ] && freeze
 
-# [ -z $OPTION ] && prompt_options
+[ -z $SELECTION ] && prompt_selection
+
+# Handle no selection
+if [ -z "$SELECTION" -a "$COMMAND" != "record-stop" ]; then
+    Print -E "Fatal: No selection specified. Use --help for help.\n"
+    exit 1
+fi
 
 Print -1 "Selection: $SELECTION"
 Print -1 " (active: ${SELECT_ACTIVE:-no}, match: '$SELECT_MATCH')\n"
