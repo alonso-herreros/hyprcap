@@ -114,7 +114,6 @@ function NYI() {
     Print -E "Fatal: You have requested a feature that is not yet implemented\n"
 }
 
-# TODO: Check this implementation
 function Print() {
     # Sort of like an if with a string pattern match
     case "$1" in -*)
