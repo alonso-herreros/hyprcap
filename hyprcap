@@ -38,8 +38,8 @@ Commands:
   rec-start | record-start     Start a screen recording
   rec-stop | record-stop       Stop a screen recording
 
-A selection can be specified after the command, with the -m or --mode option,
-or using a dmenu-like menu if neither is specified.
+A selection can be specified after the command, with the -s or --selection
+option, or using a dmenu-like menu if neither is specified.
 
 Selection:
   monitor                   Select an entire monitor interactively.
