@@ -125,6 +125,10 @@ function Print() {
     [ $VERBOSE -ge ${level:-0} ] && printf "$@" 1>&2
 }
 
+function check_dmenu() {
+    command -v $DMENU_COMMAND >/dev/null
+}
+
 
 # =============== Main operations ===============
 
@@ -704,7 +708,14 @@ function parse_selection() {
 }
 
 function prompt_selection() {
-    visible_windows=$(list_geometry)
+    if ! check_dmenu; then
+        Print -E "Error: dmenu command '$DMENU_COMMAND' not found. Please
+        install the required program or change the DMENU_COMMAND variable in
+        the script.\n"
+        return 1
+    fi
+
+    # visible_windows=$(list_geometry)
 
     dmenu_text=$'Region\nActive monitor\nMonitor\nActive window\nWindow\n'
     # dmenu_text+=$(echo $visible_windows | jq -r '"Window:\t\(.title)"')
