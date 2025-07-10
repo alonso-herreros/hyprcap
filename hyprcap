@@ -125,7 +125,8 @@ function Print() {
 }
 
 function check_dmenu() {
-    command -v $DMENU_COMMAND >/dev/null
+    local cmd="$(echo "$DMENU_COMMAND" | cut -d' ' -f1)"
+    command -v "$cmd" >/dev/null
 }
 
 
