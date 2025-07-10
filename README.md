@@ -7,8 +7,8 @@
 HyprCap is a utility to easily capture screenshots and screen recordings on
 [Hyprland](https://hyprland.org/).
 
-It allows selecting windows, regions and monitors with your mouse, or with
-command line arguments.
+It allows selecting windows, regions and monitors with your mouse, command line
+arguments, or an interactive [`fuzzel`][fuzzel] menu.
 
 <!-- It allows selecting windows, regions and monitors with your mouse, a -->
 <!-- `dmenu`-like program, or with command line arguments. -->
@@ -48,6 +48,7 @@ The following extras are not essential, but required for some features
 - `wl-clipboard` to copy to clipboard
 - `hyprpicker` to freeze the screen
 - `libnotify` + a notification daemon to get notified
+- `fuzzel` to use an interactive menu
 <!-- - dmenu or equivalent (to use an interactive menu) -->
 
 #### Copy the script
@@ -202,3 +203,5 @@ Hyprshot](https://github.com/Gustash/Hyprshot)
 [aur-git-link]: https://aur.archlinux.org/packages/hyprcap-git
 [release-shield]: https://img.shields.io/github/v/release/alonso-herreros/hyprcap?color=green&logo=github
 [release-link]: https://github.com/alonso-herreros/hyprcap/releases/latest
+
+[fuzzel]: https://codeberg.org/dnkl/fuzzel
