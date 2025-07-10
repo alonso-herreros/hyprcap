@@ -805,7 +805,7 @@ fi
 
 [ $FREEZE -eq 1 ] && freeze
 
-[ -z $SELECTION ] && prompt_selection
+[ -z "$SELECTION" ] && prompt_selection
 
 # Handle no selection
 if [ -z "$SELECTION" -a "$COMMAND" != "record-stop" ]; then
