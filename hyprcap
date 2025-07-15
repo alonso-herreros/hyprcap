@@ -724,7 +724,7 @@ function prompt_selection() {
 
     option_name=$(echo "$dmenu_text" | $DMENU_COMMAND)
 
-    if [ $? -ne 0 ]; then
+    if [ -z "$option_name" ]; then
         Print -1 "Selection menu cancelled.\n"
         return 1
     fi
