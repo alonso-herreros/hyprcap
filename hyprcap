@@ -124,9 +124,16 @@ function Print() {
     [ $VERBOSE -ge ${level:-0} ] && printf "$@" 1>&2
 }
 
-function check_dmenu() {
-    local cmd="$(echo "$DMENU_COMMAND" | cut -d' ' -f1)"
-    command -v "$cmd" >/dev/null
+# Checks if a command is available. Only the first argument is used.
+function check_cmd() {
+    local cmd="$1"
+    # If command is found, return early
+    command -v "$cmd" >/dev/null && return 0
+
+    # If command is not found, print error and return with error
+    Print -E "Error: command '$cmd' not found. "
+    Print -E "Check the list of optional dependencies and options selected.\n"
+    return 1
 }
 
 
@@ -708,12 +715,7 @@ function parse_selection() {
 }
 
 function prompt_selection() {
-    if ! check_dmenu; then
-        Print -E "Error: dmenu command '$DMENU_COMMAND' not found. Please
-        install the required program or change the DMENU_COMMAND variable in
-        the script.\n"
-        return 1
-    fi
+    check_cmd $DMENU_COMMAND || return 1
 
     # visible_windows=$(list_geometry)
 
