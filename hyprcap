@@ -133,6 +133,9 @@ function check_cmd() {
     # If command is not found, print error and return with error
     Print -E "Error: command '$cmd' not found. "
     Print -E "Check the list of optional dependencies and options selected.\n"
+    Print -E "You may be able to install it using your package manager.\n\n"
+    Print -E "Check the README for more information:\n"
+    Print -E "https://github.com/alonso-herreros/hyprcap"
     return 1
 }
 
