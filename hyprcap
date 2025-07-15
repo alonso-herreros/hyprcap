@@ -39,7 +39,7 @@ Commands:
   rec-stop | record-stop       Stop a screen recording
 
 A selection can be specified after the command, with the -s or --selection
-option, or using a dmenu-like menu if neither is specified.
+option, or using a fuzzel (dmenu-like) menu if neither is specified.
 
 Selection:
   monitor                   Select an entire monitor interactively.
@@ -114,7 +114,6 @@ function NYI() {
     Print -E "Fatal: You have requested a feature that is not yet implemented\n"
 }
 
-# TODO: Check this implementation
 function Print() {
     # Sort of like an if with a string pattern match
     case "$1" in -*)
@@ -123,6 +122,21 @@ function Print() {
     esac
     [ "$level" == "E" ] && level=-1 # Error level
     [ $VERBOSE -ge ${level:-0} ] && printf "$@" 1>&2
+}
+
+# Checks if a command is available. Only the first argument is used.
+function check_cmd() {
+    local cmd="$1"
+    # If command is found, return early
+    command -v "$cmd" >/dev/null && return 0
+
+    # If command is not found, print error and return with error
+    Print -E "Error: command '$cmd' not found. "
+    Print -E "Check the list of optional dependencies and options selected.\n"
+    Print -E "You may be able to install it using your package manager.\n\n"
+    Print -E "Check the README for more information:\n"
+    Print -E "https://github.com/alonso-herreros/hyprcap"
+    return 1
 }
 
 
@@ -635,13 +649,6 @@ function args() {
     # use it as the selection
     [ -z "$selection" -a -n "$2" ] && selection="$2"
 
-    # Handle no selection
-    # TODO: Remove this when dmenu-based selection is implemented
-    if [ -z "$selection" -a "$COMMAND" != "record-stop" ]; then
-        Print -E "Fatal: No selection specified. Use --help for help.\n"
-        exit 1
-    fi
-
     # Parse into a standard format
     [ -n "$selection" ] && parse_selection "$selection"
 
@@ -710,33 +717,41 @@ function parse_selection() {
     esac
 }
 
-# function prompt_options() {
-#     visible_windows=$(list_geometry)
+function prompt_selection() {
+    check_cmd $DMENU_COMMAND || return 1
 
-#     dmenu_text=$'Region\nActive monitor\nMonitor\nActive window\nWindow\n'
-#     dmenu_text+=$(echo $visible_windows | jq -r '"Window:\t\(.title)"')
+    # visible_windows=$(list_geometry)
 
-#     option_name=$(echo "$dmenu_text" | $DMENU_COMMAND)
+    dmenu_text=$'Region\nActive monitor\nMonitor\nActive window\nWindow\n'
+    # dmenu_text+=$(echo $visible_windows | jq -r '"Window:\t\(.title)"')
 
-#     case "$option_name" in
-#         Active*) # Current monitor or window
-#             CURRENT=1
-#             ;;&
-#         *[Mm]onitor)
-#             OPTION=output
-#             ;;
-#         *[Ww]indow)
-#             OPTION=window
-#             ;;
-#         Region)
-#             OPTION=region
-#             ;;
-#         *)
-#             parse_mode "$option_name"
-#             ;;
-#     esac
-#     sleep 0.1; # Because sometimes it takes just a moment to fade out
-# }
+    option_name=$(echo "$dmenu_text" | $DMENU_COMMAND)
+
+    if [ -z "$option_name" ]; then
+        Print -1 "Selection menu cancelled.\n"
+        return 1
+    fi
+
+    case "$option_name" in Active*) # Current monitor or window
+        SELECT_ACTIVE=1
+        ;;
+    esac
+    case "$option_name" in
+        *[Mm]onitor)
+            SELECTION=monitor
+            ;;
+        *[Ww]indow)
+            SELECTION=window
+            ;;
+        Region)
+            SELECTION=region
+            ;;
+        # *)
+        #     parse_mode "$option_name"
+        #     ;;
+    esac
+    sleep 0.1; # Because sometimes it takes just a moment to fade out
+}
 
 # =============== Main flow ===============
 
@@ -796,7 +811,13 @@ fi
 
 [ $FREEZE -eq 1 ] && freeze
 
-# [ -z $OPTION ] && prompt_options
+[ -z "$SELECTION" ] && prompt_selection
+
+# Handle no selection
+if [ -z "$SELECTION" -a "$COMMAND" != "record-stop" ]; then
+    Print -E "Fatal: No selection specified. Use --help for help.\n"
+    exit 1
+fi
 
 Print -1 "Selection: $SELECTION"
 Print -1 " (active: ${SELECT_ACTIVE:-no}, match: '$SELECT_MATCH')\n"
