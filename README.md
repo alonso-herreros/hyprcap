@@ -186,7 +186,7 @@ You can save the captures by using the `--write` option. The `--out-dir` and
 Contributions are welcome! You can help by:
 
 - Reporting bugs and issues on the [GitHub
-  repository](https://alonso-herreros/hyprcap/issues)
+  repository](https://github.com/alonso-herreros/hyprcap/issues)
 - Suggesting new features or improvements
 - Submitting pull requests with fixes or new features
 - Improving the documentation
