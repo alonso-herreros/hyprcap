@@ -888,3 +888,6 @@ if [ $NOTIFY -eq 1 ]; then
 fi
 
 [ $RAW -eq 1 ] && cat "$CAPTURE_PATH"
+
+# This ensures a clean exit code if the last line 'fails'
+exit
