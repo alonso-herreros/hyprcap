@@ -878,6 +878,12 @@ esac
 
 [ $COPY -eq 1 ] && copy_capture
 
+if [ $RAW -eq 1 ]; then
+    cat "$CAPTURE_PATH"
+else
+    echo "${SAVE_PATH:-$CAPTURE_PATH}"
+fi
+
 if [ $NOTIFY -eq 1 ]; then
     while
         action="$(notify)"
@@ -886,5 +892,3 @@ if [ $NOTIFY -eq 1 ]; then
         [ $ACTIONS -eq 1 -a -n "$action" ] && act "$action"
     do true; done
 fi
-
-[ $RAW -eq 1 ] && cat "$CAPTURE_PATH"
