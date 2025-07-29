@@ -178,8 +178,16 @@ bind = $MOD SHIFT ALT, R, exec, hyprcap rec window:active -c -n
 
 ### Save location
 
-You can save the captures by using the `--write` option. The `--out-dir` and
-`--filename` options can be used to specify the output directory and filename
+You can save the captures by using the `--write` (`-w`) option. The `--out-dir`
+(`-o`) and `--filename` (`-f`) options can be used to specify the output
+directory and filename, respectively. By default, captures are saved in the
+`$XDG_PICTURES_DIR/Screenshots` directory for screenshots and
+`$XDG_VIDEOS_DIR/Captures` for recordings.
+
+> [!Note]
+>
+> The current capture is saved in the `$XDG_CACHE_DIR/hyprcap` dir for internal
+> use.
 
 ## Contributing
 
