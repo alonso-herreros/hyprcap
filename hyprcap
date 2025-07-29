@@ -892,3 +892,6 @@ if [ $NOTIFY -eq 1 ]; then
         [ $ACTIONS -eq 1 -a -n "$action" ] && act "$action"
     do true; done
 fi
+
+# This ensures a clean exit code if the last line 'fails'
+exit 0
