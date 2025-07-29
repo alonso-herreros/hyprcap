@@ -880,7 +880,7 @@ esac
 
 if [ $RAW -eq 1 ]; then
     cat "$CAPTURE_PATH"
-else
+elif [ $VERBOSE -ge 0 ]; then
     echo "${SAVE_PATH:-$CAPTURE_PATH}"
 fi
 
