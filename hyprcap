@@ -95,6 +95,9 @@ Output options:
   -v, --verbose                 Print extra information. Specify multiple times
                                 to increase verbosity.
   -q, --quiet                   Print less information.
+  --disable-title               Forcefully disable setting the terminal title.
+                                Useful if the terminal title setting code is
+                                causing issues, e.g. when running in a script.
   -V, --version                 Show the version and exit.
   -h, --help                    Show this help message and exit.
 
@@ -561,7 +564,7 @@ function args() {
     local LONG_OPTS="select:,write,output-dir:,filename:,no-file,copy,"
     LONG_OPTS+="delay:,freeze,"
     LONG_OPTS+="notify,no-notify,actions,no-actions,notif-timeout:"
-    LONG_OPTS+="raw,verbose,quiet,version,help"
+    LONG_OPTS+="raw,verbose,quiet,disable-title,version,help"
 
     local options=$(getopt -o $OPTS --long $LONG_OPTS -- "$@")
     eval set -- "$options"
@@ -615,6 +618,9 @@ function args() {
 
             -r | --raw)
                 RAW=1
+                ;;
+            --disable-title)
+                DISABLE_TITLE=1
                 ;;
             -v | --verbose)
                 VERBOSE+=1
@@ -759,7 +765,7 @@ function prompt_selection() {
 
 # Set terminal title. This prevents self-matching when selecting windows
 # by name
-echo -ne "\033]0;HyprCap\007"
+[ $DISABLE_TITLE -ne 1 ] && [ -t 1 ] && echo -ne "\033]0;HyprCap\007"
 
 # Not with constants because it can change
 CAPTURE_PATH="$CACHE_DIR/$CAPTURE_FILENAME"
@@ -781,6 +787,7 @@ COPY=0
 # Behavior
 FREEZE=0
 DELAY= # Empty by default. Not the same as explicit 0.
+DISABLE_TITLE=0 # Disable terminal title setting
 
 # Notifications
 NOTIFY=1
