@@ -765,7 +765,7 @@ function prompt_selection() {
 
 # Set terminal title. This prevents self-matching when selecting windows
 # by name
-[ $DISABLE_TITLE -ne 1 -a -t 1 ] && echo -ne "\033]0;HyprCap\007"
+[ $DISABLE_TITLE -ne 1 ] && [ -t 1 ] && echo -ne "\033]0;HyprCap\007"
 
 # Not with constants because it can change
 CAPTURE_PATH="$CACHE_DIR/$CAPTURE_FILENAME"
