@@ -218,6 +218,20 @@ function get_geometry() {
     case $SELECTION in
         region)
             geometry=$(grab_region)
+            if [ -z "$geometry" ]; then
+                Print -1 "Region selection cancelled, selecting monitor under pointer.\n"
+
+                local monitor_name=$(hyprctl -j monitors | jq -r '.[] | select(.focused == true) | .name')
+
+                if [ -z "$monitor_name" ] || [ "$monitor_name" = "null" ]; then
+                    Print -E "Error: Could not detect monitor under pointer.\n"
+                    exit 1
+                fi
+
+                geometry=$(grab_monitor_match "$monitor_name")
+                echo "$geometry"
+                return
+            fi
             geometry=$(trim_slurp_border "$geometry")
             ;;
         monitor)
@@ -831,9 +845,9 @@ fi
 [ -z "$SELECTION" ] && prompt_selection
 
 # Handle no selection
-if [ -z "$SELECTION" -a "$COMMAND" != "record-stop" ]; then
-    Print -E "Fatal: No selection specified. Use --help for help.\n"
-    exit 1
+if [ -z "$SELECTION" ] && [ "$COMMAND" != "record-stop" ]; then
+  Print -1 "No selection specified, defaulting to 'monitor'\n"
+  SELECTION="monitor"
 fi
 
 Print -1 "Selection: $SELECTION"
