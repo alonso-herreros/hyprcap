@@ -220,6 +220,7 @@ function get_geometry() {
             geometry=$(grab_region)
             if [ -z "$geometry" ]; then
                 Print -1 "Region selection cancelled, selecting monitor under pointer.\n"
+                sleep 1
 
                 local monitor_name=$(hyprctl -j monitors | jq -r '.[] | select(.focused == true) | .name')
 
