@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 readonly VERSION="1.2.1"
 
@@ -56,6 +56,10 @@ Selection:
 
 Selection options:
   -s, --select <selection>      Alternative way to specify the selection.
+  --fallback <selection>        Fallback selection to use if an interactive
+                                selection is canceled. If the fallback is also
+                                interactive and is canceled, the capture is
+                                canceled.
 
 Saving options:
   -w, --write                   Save the capture to a file using the default
@@ -219,18 +223,7 @@ function get_geometry() {
         region)
             geometry=$(grab_region)
             if [ -z "$geometry" ]; then
-                Print -1 "Region selection cancelled, selecting monitor under pointer.\n"
-                sleep 1
-
-                local monitor_name=$(hyprctl -j monitors | jq -r '.[] | select(.focused == true) | .name')
-
-                if [ -z "$monitor_name" ] || [ "$monitor_name" = "null" ]; then
-                    Print -E "Error: Could not detect monitor under pointer.\n"
-                    exit 1
-                fi
-
-                geometry=$(grab_monitor_match "$monitor_name")
-                echo "$geometry"
+                echo ""
                 return
             fi
             geometry=$(trim_slurp_border "$geometry")
@@ -589,7 +582,7 @@ function args() {
     local LONG_OPTS="select:,write,output-dir:,filename:,no-file,copy,"
     LONG_OPTS+="delay:,freeze,"
     LONG_OPTS+="notify,no-notify,actions,no-actions,notif-timeout:"
-    LONG_OPTS+="raw,verbose,quiet,disable-title,version,help"
+    LONG_OPTS+="raw,verbose,quiet,disable-title,version,help,fallback:"
 
     local options=$(getopt -o $OPTS --long $LONG_OPTS -- "$@")
     eval set -- "$options"
@@ -659,7 +652,9 @@ function args() {
             -h | --help)
                 Help
                 exit 0;;
-
+            --fallback)
+                FALLBACK_STR="$2"
+                shift;;
             --) # Marks the end of options
                 shift && break;;
         esac
@@ -788,10 +783,6 @@ function prompt_selection() {
 
 # ---- Pre-init ----
 
-# Set terminal title. This prevents self-matching when selecting windows
-# by name
-[ $DISABLE_TITLE -ne 1 ] && [ -t 1 ] && echo -ne "\033]0;HyprCap\007"
-
 # Not with constants because it can change
 CAPTURE_PATH="$CACHE_DIR/$CAPTURE_FILENAME"
 
@@ -801,6 +792,8 @@ CAPTURE_PATH="$CACHE_DIR/$CAPTURE_FILENAME"
 SELECTION=
 SELECT_ACTIVE=0
 SELECT_MATCH=
+FALLBACK_STR=
+FALLBACK_ATTEMPTED=0
 
 # Saving
 SAVE=0
@@ -841,14 +834,24 @@ fi
 
 # ---- Init ----
 
+# Set terminal title. This prevents self-matching when selecting windows
+# by name
+[ $DISABLE_TITLE -ne 1 ] && [ -t 1 ] && echo -ne "\033]0;HyprCap\007"
+
 [ $FREEZE -eq 1 ] && freeze
 
 [ -z "$SELECTION" ] && prompt_selection
 
 # Handle no selection
 if [ -z "$SELECTION" ] && [ "$COMMAND" != "record-stop" ]; then
-  Print -1 "No selection specified, defaulting to 'monitor'\n"
-  SELECTION="monitor"
+  if [ -n "$FALLBACK_STR" ]; then
+    parse_selection "$FALLBACK_STR"
+    FALLBACK_ATTEMPTED=1
+    Print -1 "No selection specified, falling back to '$SELECTION'\n"
+  else
+    Print -1 "No selection specified, defaulting to 'monitor'\n"
+    SELECTION="monitor"
+  fi
 fi
 
 Print -1 "Selection: $SELECTION"
@@ -857,6 +860,20 @@ Print -1 " (active: ${SELECT_ACTIVE:-no}, match: '$SELECT_MATCH')\n"
 # ---- Get geometry ----
 
 GEOMETRY=$(get_geometry)
+
+if [ -z "$GEOMETRY" ]; then
+    if [ -n "$FALLBACK_STR" ] && [ ${FALLBACK_ATTEMPTED:-0} -ne 1 ]; then
+        parse_selection "$FALLBACK_STR"
+        FALLBACK_ATTEMPTED=1
+        GEOMETRY=$(get_geometry)
+    fi
+fi
+
+if [ -z "$GEOMETRY" ]; then
+    [ $FREEZE -eq 1 ] && unfreeze
+    Print -1 "Selection cancelled.\n"
+    exit 1
+fi
 
 case "$GEOMETRY" in
     *[0-9]*,*[0-9]*' '[0-9]*x[0-9]*) # Valid geometry
