@@ -89,8 +89,8 @@ Commands:
   rec-start | record-start     Start a screen recording
   rec-stop | record-stop       Stop a screen recording
 
-A selection can be specified after the command, with the -m or --mode option,
-or using a dmenu-like menu if neither is specified.
+A selection can be specified after the command, with the -s or --selection
+option, or using a fuzzel (dmenu-like) menu if neither is specified.
 
 Selection:
   monitor                   Select an entire monitor interactively.
@@ -146,6 +146,9 @@ Output options:
   -v, --verbose                 Print extra information. Specify multiple times
                                 to increase verbosity.
   -q, --quiet                   Print less information.
+  --disable-title               Forcefully disable setting the terminal title.
+                                Useful if the terminal title setting code is
+                                causing issues, e.g. when running in a script.
   -V, --version                 Show the version and exit.
   -h, --help                    Show this help message and exit.
 
