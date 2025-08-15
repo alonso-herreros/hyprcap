@@ -379,6 +379,8 @@ function geometry_from_window() {
 
 function trim_slurp_border() {
     local geometry="$1"
+    [ -z "$geometry" ] && return 1 # Don't even need to echo, it's empty
+
     local border=$SLURP_BORDER_WEIGHT
 
     local xy_str=${geometry% *} # Get the first part (X,Y)
