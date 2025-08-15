@@ -277,7 +277,7 @@ function grab_monitor_match() {
 
     if [ -z "$matching_monitor" ]; then
         Print -E "Error: No monitor with name '$name' found.\n"
-        exit 1
+        return 1
     fi
 
     echo $matching_monitor | geometry_from_monitor
@@ -303,7 +303,7 @@ function grab_window_active() {
 
     if [ "$active_window" = "{}" ]; then
         Print -E "Error: No active window found.\n"
-        exit 1
+        return 1
     fi
 
     echo $active_window | geometry_from_window
@@ -322,7 +322,7 @@ function grab_window_match() {
 
     if [ "$matching_window" = "null" ]; then
         Print -E "Error: No window with title '$title' found.\n"
-        exit 1
+        return 1
     fi
 
     echo $matching_window | geometry_from_window
@@ -544,7 +544,7 @@ function unfreeze() {
     else # In case we messed up
         Print -E "Error: lost the hyprpicker PID, using pkill.\n"
         pkill hyprpicker
-        exit 1
+        return 1
     fi
 }
 
@@ -554,7 +554,7 @@ function freeze() {
 
     if [ -n "$HYPRPICKER_PID" ]; then
         Print -E "Error: hyprpicker is already running.\n"
-        exit 1
+        return 1
     fi
 
     if command -v hyprpicker >/dev/null; then
@@ -563,7 +563,7 @@ function freeze() {
         sleep 0.2
     else
         Print -E "Error: hyprpicker is not installed. Cannot freeze.\n"
-        exit 1
+        return 1
     fi
 }
 
