@@ -106,7 +106,7 @@ Examples:
   Screenshot a window (interactive)     \`hyprcap shot window\`
   Toggle recording a specific region    \`hyprcap rec region:100,100,400x300\`
   Stop an ongoing recording             \`hyprcap rec-stop\`
-  Fall back to monitor catpure when selection is cancelled
+  Fall back to monitor capture when selection is cancelled
         \`hyprcap shot region || hyprcap shot monitor:active\`
 EOF
 }
