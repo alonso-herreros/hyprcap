@@ -162,7 +162,6 @@ You can add the various modes as keybindings in your Hyprland config like so:
 
 ```ini
 # ~/.config/hypr/hyprland.conf
-# (from my dotfiles)
 
 ...
 
