@@ -127,6 +127,17 @@ function Print() {
     [ $VERBOSE -ge ${level:-0} ] && printf "$@" 1>&2
 }
 
+function Exit() {
+    local exit_code=${1:-0}
+    Print -1 "Exiting with code $exit_code\n"
+
+    if [ $FREEZE -eq 1 ]; then
+        unfreeze
+    fi
+
+    exit $exit_code
+}
+
 # Checks if a command is available. Only the first argument is used.
 function check_cmd() {
     local cmd="$1"
@@ -525,7 +536,7 @@ function copy_capture() {
     if [ "$COMMAND" == "screenshot" ]; then
         wl-copy --type image/png < "$CAPTURE_PATH"
     elif [ "$COMMAND" == "record" ]; then
-        NYI && exit 1 # TODO: Remove when implemented
+        NYI && Exit 1 # TODO: Remove when implemented
     fi
 }
 
@@ -695,7 +706,7 @@ function parse_command() {
             ;;
         *)
             Print -E "Fatal: Unknown command '$1'\n"
-            exit 1
+            Exit 1
             ;;
     esac
 }
@@ -815,9 +826,9 @@ if [ "$COMMAND" = "record-stop" ]; then
     Print -1 "Stopping recording...\n"
     if ! record_stop; then
         Print -E "Fatal: Failed to stop screen recording.\n"
-        exit 1
+        Exit 1
     fi
-    exit 0
+    Exit 0
 fi
 
 # ---- Init ----
@@ -833,7 +844,7 @@ fi
 # Handle no selection
 if [ -z "$SELECTION" -a "$COMMAND" != "record-stop" ]; then
     Print -E "Fatal: No selection specified. Use --help for help.\n"
-    exit 1
+    Exit 1
 fi
 
 Print -1 "Selection: $SELECTION"
@@ -848,7 +859,7 @@ case "$GEOMETRY" in
         ;;
     *)
         Print -E "Fatal: Resolved geometry '$GEOMETRY' is invalid.\n"
-        exit 1;;
+        Exit 1;;
 esac
 
 Print -1 "Geometry: $GEOMETRY\n"
@@ -870,20 +881,20 @@ case "$COMMAND" in
         if ! screenshot; then
             # If the screenshot command fails, exit with an error
             Print -E "Fatal: Failed to take a screenshot.\n"
-            exit 1
+            Exit 1
         fi
         ;;
     record | record-start)
         CAPTURE_PATH="$CAPTURE_PATH.mp4" # Ensure the file has the right extension
         if ! record_start; then
             Print -E "Fatal: Screen recording failed.\n"
-            exit 1
+            Exit 1
         fi
         ;;
     # TODO: Maybe add a simple command to print the geometry
     *)
         Print -E "Fatal: Unknown command '$COMMAND'.\n"
-        exit 1
+        Exit 1
         ;;
 esac
 
