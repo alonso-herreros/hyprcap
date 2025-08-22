@@ -526,14 +526,6 @@ function act() {
 function save_capture() {
     SAVE=1 # In case it was called for other reasons
 
-    # If output directory is not set, use the default one
-    if [ "$COMMAND" == "screenshot" ]; then
-        OUTPUT_DIR="${OUTPUT_DIR:-$DEF_SCREENSHOT_DIR}"
-    elif [ "$COMMAND" == "record" ]; then
-        OUTPUT_DIR="${OUTPUT_DIR:-$DEF_RECORDING_DIR}"
-    fi
-    SAVE_PATH="$OUTPUT_DIR/$FILENAME"
-
     Print -1 "Saving capture to '$SAVE_PATH'\n"
 
     mkdir -p "$OUTPUT_DIR"
@@ -825,6 +817,15 @@ function solve_filenames() {
     Print -2 "Solved capture filename: '$CAPTURE_FILENAME'\n"
 }
 
+function solve_dirs() {
+    if [ -z "$OUTPUT_DIR" ]; then
+        case "$COMMAND" in
+            screenshot) OUTPUT_DIR="$DEF_SCREENSHOT_DIR";;
+            record*)    OUTPUT_DIR="$DEF_RECORDING_DIR";;
+        esac
+    fi
+}
+
 # =============== Main flow ===============
 
 # ---- Pre-init ----
@@ -870,7 +871,9 @@ Print -1 "Command selected: $COMMAND\n"
 
 solve_filetype
 solve_filenames
+solve_dirs
 
+SAVE_PATH="$OUTPUT_DIR/$FILENAME"
 CAPTURE_PATH="$CACHE_DIR/$CAPTURE_FILENAME"
 
 # ---- Early exit commands ----
