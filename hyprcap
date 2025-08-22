@@ -801,6 +801,21 @@ function prompt_selection() {
     sleep 0.1; # Because sometimes it takes just a moment to fade out
 }
 
+function solve_filetype() {
+    DETECTED_FILETYPE="${FILENAME##*.}" # Extension of the filename
+
+    if [ -z "$FILETYPE" ]; then
+        if [ -n "$DETECTED_FILETYPE" ]; then
+            FILETYPE="$DETECTED_FILETYPE"
+        else
+            case "$COMMAND" in
+                screenshot) FILETYPE="$DEF_SCREENSHOT_FILETYPE";;
+                record*)    FILETYPE="$DEF_RECORDING_FILETYPE";;
+            esac
+        fi
+    fi
+}
+
 # =============== Main flow ===============
 
 # ---- Pre-init ----
@@ -893,6 +908,8 @@ if [ -n "$DELAY" ]; then
     Print -1 "Delaying for $DELAY seconds...\n"
     sleep $DELAY
 fi
+
+solve_filetype
 
 mkdir -p "$CACHE_DIR"
 
