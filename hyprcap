@@ -174,14 +174,12 @@ function check_cmd() {
 # --------------- Capture functions ---------------
 
 function screenshot() {
-    local capture_path="$CAPTURE_PATH"
 
-    grim -g "$GEOMETRY" "$capture_path"
+    grim -g "$GEOMETRY" "$CAPTURE_PATH"
 }
 
 function record_start() {
     Print -1 "Starting screen recording of $GEOMETRY\n"
-    local capture_path="$CAPTURE_PATH"
 
     if [ -r "$REC_PID_PATH" ]; then
         Print -E "Error: Screen recording is already in progress.\n"
@@ -190,7 +188,7 @@ function record_start() {
 
     # We send this to the background so we can store its PID in a file.
     # Otherwise, we wouldn't be able to gracefully stop it from the outside.
-    wf-recorder -g "$GEOMETRY" -f "$capture_path" --overwrite --audio &
+    wf-recorder -g "$GEOMETRY" -f "$CAPTURE_PATH" --overwrite --audio &
     local rec_pid=$!
     echo "$rec_pid" > "$REC_PID_PATH"
 
