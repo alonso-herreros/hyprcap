@@ -7,10 +7,13 @@ readonly CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/hyprcap"
 readonly CAPTURE_FILENAME="capture"
 readonly REC_PID_PATH="${XDG_RUNTIME_DIR:-/run}/hyprcap_rec.pid"
 
+readonly DEF_BASENAME="$(date +'%Y-%m-%d-%H%M%S_hyprcap')"
 readonly DEF_SCREENSHOT_DIR="${XDG_PICTURES_DIR:-$HOME/Pictures}/Screenshots"
 readonly DEF_RECORDING_DIR="${XDG_VIDEOS_DIR:-$HOME/Videos}/Captures"
-readonly DEF_SCREENSHOT_FILENAME="$(date +'%Y-%m-%d-%H%M%S_hyprcap.png')"
-readonly DEF_RECORDING_FILENAME="$(date +'%Y-%m-%d-%H%M%S_hyprcap.mp4')"
+readonly DEF_SCREENSHOT_FILETYPE="png"
+readonly DEF_RECORDING_FILETYPE="mp4"
+readonly DEF_SCREENSHOT_FILENAME="$DEF_BASENAME.$DEF_SCREENSHOT_FILETYPE"
+readonly DEF_RECORDING_FILENAME="$DEF_BASENAME.$DEF_RECORDING_FILETYPE"
 
 readonly DMENU_COMMAND="fuzzel -d"
 
