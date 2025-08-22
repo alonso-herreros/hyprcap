@@ -790,12 +790,12 @@ function prompt_selection() {
 }
 
 function solve_filetype() {
-    DETECTED_FILETYPE="${FILENAME##*.}" # Extension of the filename
-    Print -2 "Detected filetype: '$DETECTED_FILETYPE'\n"
+    DETECTED_EXTENSION="${FILENAME##*.}" # Extension of the filename
+    Print -2 "Detected extension: '$DETECTED_EXTENSION'\n"
 
     if [ -z "$FILETYPE" ]; then
-        if [ -n "$DETECTED_FILETYPE" ]; then
-            FILETYPE="$DETECTED_FILETYPE"
+        if [ -n "$DETECTED_EXTENSION" ]; then
+            FILETYPE="$DETECTED_EXTENSION"
         else
             case "$COMMAND" in
                 screenshot) FILETYPE="$DEF_SCREENSHOT_FILETYPE";;
@@ -810,7 +810,7 @@ function solve_filenames() {
     # Save filename
     if [ -z "$FILENAME" ]; then
         FILENAME="$DEF_BASENAME.$FILETYPE"
-    elif [ "$DETECTED_FILETYPE" != "$FILETYPE" ]; then
+    elif [ "$DETECTED_EXTENSION" != "$FILETYPE" ]; then
         FILENAME+=".$FILETYPE"
     fi
     Print -2 "Solved save filename: '$FILENAME'\n"
@@ -849,7 +849,7 @@ SAVE=0
 OUTPUT_DIR=
 FILENAME=  # Changed during solve_filenames
 SAVE_PATH= # Set after solving filenames
-DETECTED_FILETYPE=
+DETECTED_EXTENSION=
 FILETYPE=
 COPY=0
 
