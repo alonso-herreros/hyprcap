@@ -64,12 +64,22 @@ Saving options:
                                 Default: \$XDG_PICTURES_DIR/Screenshots or
                                 \$XDG_VIDEOS_DIR/Captures
   -f, --filename <filename>     The file name for the resulting capture within
-                                the output directory.
+                                the output directory. The file extension
+                                (everything after the last dot) is used to
+                                determine the file type, unless overridden with
+                                \`--filetype\`, in which case it is ignored if
+                                they match, and the right one is appended if
+                                they don't.
                                 Default:
                                   YYYY-MM-DD-hhmmss_hyprcap.<extension>
                                 where <extension> is determined by the command
-                                (e.g. png for screenshots, mp4 for recordings).
+                                (see the \`--filetype\` defaults).
   -F, --no-file                 Don't save captures to a file (default).
+      --filetype <type>         Force a file type for the capture. For
+                                supported types, see the documentation for grim
+                                and wf-recorder.
+                                Defaults: png for screenshots, mp4 for
+                                recordings.
   -c, --copy                    Copy capture to clipboard with 'wl-copy'.
 
 Capture options:
@@ -586,9 +596,10 @@ function freeze() {
 
 function args() {
     local OPTS="s:wo:f:Fcd:znNaAt:rVqvh"
-    local LONG_OPTS="select:,write,output-dir:,filename:,no-file,copy,"
+    local LONG_OPTS="select:,"
+    LONG_OPTS+="write,output-dir:,filename:,no-file,filetype:,copy,"
     LONG_OPTS+="delay:,freeze,"
-    LONG_OPTS+="notify,no-notify,actions,no-actions,notif-timeout:"
+    LONG_OPTS+="notify,no-notify,actions,no-actions,notif-timeout:,"
     LONG_OPTS+="raw,verbose,quiet,disable-title,version,help"
 
     local options=$(getopt -o $OPTS --long $LONG_OPTS -- "$@")
@@ -614,6 +625,9 @@ function args() {
             -F | --no-file)
                 SAVE=0
                 ;;
+            --filetype)
+                FILETYPE="$2"
+                shift;;
             -c | --copy)
                 COPY=1
                 ;;
@@ -803,6 +817,8 @@ SAVE=0
 OUTPUT_DIR=
 FILENAME=
 SAVE_PATH=
+DETECTED_FILETYPE=
+FILETYPE=
 COPY=0
 
 # Behavior
