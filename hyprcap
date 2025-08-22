@@ -4,7 +4,7 @@ readonly VERSION="1.2.1"
 
 # TODO: This is rather a tmp file than a cache file. Fix it?
 readonly CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/hyprcap"
-readonly CAPTURE_FILENAME="capture"
+readonly CAPTURE_BASENAME="capture"
 readonly REC_PID_PATH="${XDG_RUNTIME_DIR:-/run}/hyprcap_rec.pid"
 
 readonly DEF_BASENAME="$(date +'%Y-%m-%d-%H%M%S_hyprcap')"
@@ -12,8 +12,6 @@ readonly DEF_SCREENSHOT_DIR="${XDG_PICTURES_DIR:-$HOME/Pictures}/Screenshots"
 readonly DEF_RECORDING_DIR="${XDG_VIDEOS_DIR:-$HOME/Videos}/Captures"
 readonly DEF_SCREENSHOT_FILETYPE="png"
 readonly DEF_RECORDING_FILETYPE="mp4"
-readonly DEF_SCREENSHOT_FILENAME="$DEF_BASENAME.$DEF_SCREENSHOT_FILETYPE"
-readonly DEF_RECORDING_FILENAME="$DEF_BASENAME.$DEF_RECORDING_FILETYPE"
 
 readonly DMENU_COMMAND="fuzzel -d"
 
@@ -528,13 +526,11 @@ function act() {
 function save_capture() {
     SAVE=1 # In case it was called for other reasons
 
-    # If output directory or filename are not set, use the default ones
+    # If output directory is not set, use the default one
     if [ "$COMMAND" == "screenshot" ]; then
         OUTPUT_DIR="${OUTPUT_DIR:-$DEF_SCREENSHOT_DIR}"
-        FILENAME="${FILENAME:-$DEF_SCREENSHOT_FILENAME}"
     elif [ "$COMMAND" == "record" ]; then
         OUTPUT_DIR="${OUTPUT_DIR:-$DEF_RECORDING_DIR}"
-        FILENAME="${FILENAME:-$DEF_RECORDING_FILENAME}"
     fi
     SAVE_PATH="$OUTPUT_DIR/$FILENAME"
 
@@ -815,11 +811,28 @@ function solve_filetype() {
     fi
 }
 
+function solve_filenames() {
+    # Save filename
+    if [ -z "$FILENAME" ]; then
+        FILENAME="$DEF_BASENAME.$FILETYPE"
+    elif [ "$DETECTED_FILETYPE" != "$FILETYPE" ]; then
+        FILENAME+=".$FILETYPE"
+    fi
+    Print -2 "Solved save filename: '$FILENAME'\n"
+
+    # Capture filename
+    CAPTURE_FILENAME="$CAPTURE_BASENAME.$FILETYPE"
+    Print -2 "Solved capture filename: '$CAPTURE_FILENAME'\n"
+}
+
 # =============== Main flow ===============
 
 # ---- Pre-init ----
 
 # ---- Options and defaults ----
+
+CAPTURE_FILENAME= # Changed during solve_filenames
+CAPTURE_PATH=     # Set after solving filenames
 
 # Selection
 SELECTION=
@@ -829,8 +842,8 @@ SELECT_MATCH=
 # Saving
 SAVE=0
 OUTPUT_DIR=
-FILENAME=
-SAVE_PATH=
+FILENAME=  # Changed during solve_filenames
+SAVE_PATH= # Set after solving filenames
 DETECTED_FILETYPE=
 FILETYPE=
 COPY=0
@@ -856,6 +869,7 @@ Print -1 "Running HyprCap version $VERSION\n"
 Print -1 "Command selected: $COMMAND\n"
 
 solve_filetype
+solve_filenames
 
 CAPTURE_PATH="$CACHE_DIR/$CAPTURE_FILENAME"
 
@@ -922,7 +936,6 @@ case "$COMMAND" in
         fi
         ;;
     record | record-start)
-        CAPTURE_PATH="$CAPTURE_PATH.mp4" # Ensure the file has the right extension
         if ! record_start; then
             Print -E "Fatal: Screen recording failed.\n"
             Exit 1
