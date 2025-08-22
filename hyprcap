@@ -805,14 +805,19 @@ function solve_filetype() {
 }
 
 function solve_filenames() {
+    local extension="${FILETYPE,,}"
+    if [ "$extension" == "jpeg" ]; then
+        extension="jpg"
+    fi
+
     # Save filename
     if [ -z "$FILENAME" ]; then
-        FILENAME="$DEF_BASENAME.$FILETYPE"
+        FILENAME="$DEF_BASENAME.$extension"
     fi
     Print -2 "Solved save filename: '$FILENAME'\n"
 
     # Capture filename
-    CAPTURE_FILENAME="$CAPTURE_BASENAME.$FILETYPE"
+    CAPTURE_FILENAME="$CAPTURE_BASENAME.$extension"
     Print -2 "Solved capture filename: '$CAPTURE_FILENAME'\n"
 }
 
