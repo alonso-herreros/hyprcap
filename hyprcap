@@ -820,9 +820,6 @@ function solve_filetype() {
 
 # ---- Pre-init ----
 
-# Not with constants because it can change
-CAPTURE_PATH="$CACHE_DIR/$CAPTURE_FILENAME"
-
 # ---- Options and defaults ----
 
 # Selection
@@ -858,6 +855,10 @@ args $0 "$@"
 
 Print -1 "Running HyprCap version $VERSION\n"
 Print -1 "Command selected: $COMMAND\n"
+
+solve_filetype
+
+CAPTURE_PATH="$CACHE_DIR/$CAPTURE_FILENAME"
 
 # ---- Early exit commands ----
 if [ "$COMMAND" = "record-stop" ]; then
@@ -908,8 +909,6 @@ if [ -n "$DELAY" ]; then
     Print -1 "Delaying for $DELAY seconds...\n"
     sleep $DELAY
 fi
-
-solve_filetype
 
 mkdir -p "$CACHE_DIR"
 
