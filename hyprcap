@@ -806,9 +806,9 @@ function solve_filetype() {
 
 function solve_filenames() {
     local extension="${FILETYPE,,}"
-    if [ "$extension" == "jpeg" ]; then
-        extension="jpg"
-    fi
+    case "$extension" in
+        jpeg) extension="jpg";;
+    esac
 
     # Save filename
     if [ -z "$FILENAME" ]; then
