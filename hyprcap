@@ -174,7 +174,7 @@ function check_cmd() {
 function screenshot() {
     Print -1 "Making screenshot of $GEOMETRY\n"
 
-    grim -g "$GEOMETRY" "$CAPTURE_PATH" -t "$FILETYPE"
+    grim -g "$GEOMETRY" -t "$FILETYPE" "$CAPTURE_PATH"
 }
 
 function record_start() {
