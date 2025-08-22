@@ -790,6 +790,7 @@ function prompt_selection() {
 
 function solve_filetype() {
     DETECTED_FILETYPE="${FILENAME##*.}" # Extension of the filename
+    Print -2 "Detected filetype: '$DETECTED_FILETYPE'\n"
 
     if [ -z "$FILETYPE" ]; then
         if [ -n "$DETECTED_FILETYPE" ]; then
@@ -801,6 +802,7 @@ function solve_filetype() {
             esac
         fi
     fi
+    Print -2 "Solved filetype: '$FILETYPE'\n"
 }
 
 function solve_filenames() {
@@ -824,6 +826,7 @@ function solve_dirs() {
             record*)    OUTPUT_DIR="$DEF_RECORDING_DIR";;
         esac
     fi
+    Print -2 "Solved save dir: '$OUTPUT_DIR'\n"
 }
 
 # =============== Main flow ===============
