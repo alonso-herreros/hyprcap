@@ -68,9 +68,7 @@ Saving options:
                                 the output directory. The file extension
                                 (everything after the last dot) is used to
                                 determine the file type, unless overridden with
-                                \`--filetype\`, in which case it is ignored if
-                                they match, and the right one is appended if
-                                they don't.
+                                \`--filetype\`.
                                 Default:
                                   YYYY-MM-DD-hhmmss_hyprcap.<extension>
                                 where <extension> is determined by the command
@@ -810,8 +808,6 @@ function solve_filenames() {
     # Save filename
     if [ -z "$FILENAME" ]; then
         FILENAME="$DEF_BASENAME.$FILETYPE"
-    elif [ "$DETECTED_EXTENSION" != "$FILETYPE" ]; then
-        FILENAME+=".$FILETYPE"
     fi
     Print -2 "Solved save filename: '$FILENAME'\n"
 
