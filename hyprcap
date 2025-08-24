@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-readonly VERSION="1.2.1"
+readonly VERSION="1.3.0"
 
 # TODO: This is rather a tmp file than a cache file. Fix it?
 readonly CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/hyprcap"
