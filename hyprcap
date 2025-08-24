@@ -4,13 +4,14 @@ readonly VERSION="1.2.1"
 
 # TODO: This is rather a tmp file than a cache file. Fix it?
 readonly CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/hyprcap"
-readonly CAPTURE_FILENAME="capture"
+readonly CAPTURE_BASENAME="capture"
 readonly REC_PID_PATH="${XDG_RUNTIME_DIR:-/run}/hyprcap_rec.pid"
 
+readonly DEF_BASENAME="$(date +'%Y-%m-%d-%H%M%S_hyprcap')"
 readonly DEF_SCREENSHOT_DIR="${XDG_PICTURES_DIR:-$HOME/Pictures}/Screenshots"
 readonly DEF_RECORDING_DIR="${XDG_VIDEOS_DIR:-$HOME/Videos}/Captures"
-readonly DEF_SCREENSHOT_FILENAME="$(date +'%Y-%m-%d-%H%M%S_hyprcap.png')"
-readonly DEF_RECORDING_FILENAME="$(date +'%Y-%m-%d-%H%M%S_hyprcap.mp4')"
+readonly DEF_SCREENSHOT_FILETYPE="png"
+readonly DEF_RECORDING_FILETYPE="mp4"
 
 readonly DMENU_COMMAND="fuzzel -d"
 
@@ -64,12 +65,20 @@ Saving options:
                                 Default: \$XDG_PICTURES_DIR/Screenshots or
                                 \$XDG_VIDEOS_DIR/Captures
   -f, --filename <filename>     The file name for the resulting capture within
-                                the output directory.
+                                the output directory. The file extension
+                                (everything after the last dot) is used to
+                                determine the file type, unless overridden with
+                                \`--filetype\`.
                                 Default:
                                   YYYY-MM-DD-hhmmss_hyprcap.<extension>
                                 where <extension> is determined by the command
-                                (e.g. png for screenshots, mp4 for recordings).
+                                (see the \`--filetype\` defaults).
   -F, --no-file                 Don't save captures to a file (default).
+      --filetype <type>         Force a file type for the capture. For
+                                supported types, see the documentation for grim
+                                and wf-recorder.
+                                Defaults: png for screenshots, mp4 for
+                                recordings.
   -c, --copy                    Copy capture to clipboard with 'wl-copy'.
 
 Capture options:
@@ -161,14 +170,13 @@ function check_cmd() {
 # --------------- Capture functions ---------------
 
 function screenshot() {
-    local capture_path="$CAPTURE_PATH"
+    Print -1 "Making screenshot of $GEOMETRY\n"
 
-    grim -g "$GEOMETRY" "$capture_path"
+    grim -g "$GEOMETRY" -t "$FILETYPE" "$CAPTURE_PATH"
 }
 
 function record_start() {
     Print -1 "Starting screen recording of $GEOMETRY\n"
-    local capture_path="$CAPTURE_PATH"
 
     if [ -r "$REC_PID_PATH" ]; then
         Print -E "Error: Screen recording is already in progress.\n"
@@ -177,7 +185,8 @@ function record_start() {
 
     # We send this to the background so we can store its PID in a file.
     # Otherwise, we wouldn't be able to gracefully stop it from the outside.
-    wf-recorder -g "$GEOMETRY" -f "$capture_path" --overwrite --audio &
+    # Also, the filetype is determined by the filename ($CAPTURE_PATH).
+    wf-recorder -g "$GEOMETRY" -f "$CAPTURE_PATH" --overwrite --audio &
     local rec_pid=$!
     echo "$rec_pid" > "$REC_PID_PATH"
 
@@ -516,16 +525,6 @@ function act() {
 function save_capture() {
     SAVE=1 # In case it was called for other reasons
 
-    # If output directory or filename are not set, use the default ones
-    if [ "$COMMAND" == "screenshot" ]; then
-        OUTPUT_DIR="${OUTPUT_DIR:-$DEF_SCREENSHOT_DIR}"
-        FILENAME="${FILENAME:-$DEF_SCREENSHOT_FILENAME}"
-    elif [ "$COMMAND" == "record" ]; then
-        OUTPUT_DIR="${OUTPUT_DIR:-$DEF_RECORDING_DIR}"
-        FILENAME="${FILENAME:-$DEF_RECORDING_FILENAME}"
-    fi
-    SAVE_PATH="$OUTPUT_DIR/$FILENAME"
-
     Print -1 "Saving capture to '$SAVE_PATH'\n"
 
     mkdir -p "$OUTPUT_DIR"
@@ -586,9 +585,10 @@ function freeze() {
 
 function args() {
     local OPTS="s:wo:f:Fcd:znNaAt:rVqvh"
-    local LONG_OPTS="select:,write,output-dir:,filename:,no-file,copy,"
+    local LONG_OPTS="select:,"
+    LONG_OPTS+="write,output-dir:,filename:,no-file,filetype:,copy,"
     LONG_OPTS+="delay:,freeze,"
-    LONG_OPTS+="notify,no-notify,actions,no-actions,notif-timeout:"
+    LONG_OPTS+="notify,no-notify,actions,no-actions,notif-timeout:,"
     LONG_OPTS+="raw,verbose,quiet,disable-title,version,help"
 
     local options=$(getopt -o $OPTS --long $LONG_OPTS -- "$@")
@@ -614,6 +614,9 @@ function args() {
             -F | --no-file)
                 SAVE=0
                 ;;
+            --filetype)
+                FILETYPE="$2"
+                shift;;
             -c | --copy)
                 COPY=1
                 ;;
@@ -784,14 +787,60 @@ function prompt_selection() {
     sleep 0.1; # Because sometimes it takes just a moment to fade out
 }
 
+function solve_filetype() {
+    case "$FILENAME" in *.*) # If the filename has an dot in it
+        DETECTED_EXTENSION="${FILENAME##*.}";; # Extension of the filename
+    esac
+    Print -2 "Detected extension: '$DETECTED_EXTENSION'\n"
+
+    if [ -z "$FILETYPE" ]; then
+        if [ -n "$DETECTED_EXTENSION" ]; then
+            FILETYPE="$DETECTED_EXTENSION"
+        else
+            case "$COMMAND" in
+                screenshot) FILETYPE="$DEF_SCREENSHOT_FILETYPE";;
+                record*)    FILETYPE="$DEF_RECORDING_FILETYPE";;
+            esac
+        fi
+    fi
+    Print -2 "Solved filetype: '$FILETYPE'\n"
+}
+
+function solve_filenames() {
+    local extension="${FILETYPE,,}"
+    case "$extension" in
+        jpeg) extension="jpg";;
+    esac
+
+    # Save filename
+    if [ -z "$FILENAME" ]; then
+        FILENAME="$DEF_BASENAME.$extension"
+    fi
+    Print -2 "Solved save filename: '$FILENAME'\n"
+
+    # Capture filename
+    CAPTURE_FILENAME="$CAPTURE_BASENAME.$extension"
+    Print -2 "Solved capture filename: '$CAPTURE_FILENAME'\n"
+}
+
+function solve_dirs() {
+    if [ -z "$OUTPUT_DIR" ]; then
+        case "$COMMAND" in
+            screenshot) OUTPUT_DIR="$DEF_SCREENSHOT_DIR";;
+            record*)    OUTPUT_DIR="$DEF_RECORDING_DIR";;
+        esac
+    fi
+    Print -2 "Solved save dir: '$OUTPUT_DIR'\n"
+}
+
 # =============== Main flow ===============
 
 # ---- Pre-init ----
 
-# Not with constants because it can change
-CAPTURE_PATH="$CACHE_DIR/$CAPTURE_FILENAME"
-
 # ---- Options and defaults ----
+
+CAPTURE_FILENAME= # Changed during solve_filenames
+CAPTURE_PATH=     # Set after solving filenames
 
 # Selection
 SELECTION=
@@ -801,8 +850,10 @@ SELECT_MATCH=
 # Saving
 SAVE=0
 OUTPUT_DIR=
-FILENAME=
-SAVE_PATH=
+FILENAME=  # Changed during solve_filenames
+SAVE_PATH= # Set after solving filenames
+DETECTED_EXTENSION=
+FILETYPE=
 COPY=0
 
 # Behavior
@@ -824,6 +875,13 @@ args $0 "$@"
 
 Print -1 "Running HyprCap version $VERSION\n"
 Print -1 "Command selected: $COMMAND\n"
+
+solve_filetype
+solve_filenames
+solve_dirs
+
+SAVE_PATH="$OUTPUT_DIR/$FILENAME"
+CAPTURE_PATH="$CACHE_DIR/$CAPTURE_FILENAME"
 
 # ---- Early exit commands ----
 if [ "$COMMAND" = "record-stop" ]; then
@@ -881,7 +939,6 @@ mkdir -p "$CACHE_DIR"
 
 case "$COMMAND" in
     screenshot)
-        Print -1 "Taking a screenshot of $GEOMETRY\n"
         if ! screenshot; then
             # If the screenshot command fails, exit with an error
             Print -E "Fatal: Failed to take a screenshot.\n"
@@ -889,7 +946,6 @@ case "$COMMAND" in
         fi
         ;;
     record | record-start)
-        CAPTURE_PATH="$CAPTURE_PATH.mp4" # Ensure the file has the right extension
         if ! record_start; then
             Print -E "Fatal: Screen recording failed.\n"
             Exit 1
