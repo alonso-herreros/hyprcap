@@ -200,7 +200,7 @@ function record_start() {
     Print -1 "Waiting for process $rec_pid to finish...\n"
     wait "$rec_pid"
     local exit_code=$?
-    Print -1 "Process $rec_pid finished.\n"
+    Print -1 "Process $rec_pid finished with code $exit_code.\n"
 
     # Wait for al subprocesses to finish too, otherwise we may find
     # incomplete files.
@@ -208,8 +208,10 @@ function record_start() {
 
     # Once wf-recorder exits, we can remove the PID file
     rm "$REC_PID_PATH" 2>/dev/null
-    # And return the exit code from the recording command
-    return $exit_code
+    # And return the exit code from the recording command unless it's
+    # 130 (SIGINT), which is expected.
+    [ $exit_code -eq 130 ] || return $exit_code
+    # Default return code is 0 otherwise
 }
 
 function record_stop() {
