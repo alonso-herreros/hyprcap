@@ -202,6 +202,10 @@ function record_start() {
     Print -1 "Process $rec_pid finished.\n"
     local exit_code=$?
 
+    # Wait for al subprocesses to finish too, otherwise we may find
+    # incomplete files.
+    wait
+
     # Once wf-recorder exits, we can remove the PID file
     rm "$REC_PID_PATH" 2>/dev/null
     # And return the exit code from the recording command
