@@ -199,8 +199,8 @@ function record_start() {
     # operations (notifications, saving, etc.)
     Print -1 "Waiting for process $rec_pid to finish...\n"
     wait "$rec_pid"
-    Print -1 "Process $rec_pid finished.\n"
     local exit_code=$?
+    Print -1 "Process $rec_pid finished.\n"
 
     # Wait for al subprocesses to finish too, otherwise we may find
     # incomplete files.
