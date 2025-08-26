@@ -970,9 +970,9 @@ if [ $RAW -eq 1 ]; then
     cat "$CAPTURE_PATH"
 # If output isn't raw and --quiet isn't set, print the path to the capture
 elif [ $VERBOSE -ge 0 ]; then
-    # Prints the save path if set (when using -w, -o and/or -f), otherwise
-    # a path to the transient capture file in the cache dir.
-    echo "${SAVE_PATH:-$CAPTURE_PATH}"
+    # Prints the save path if saving is on, otherwise a path to the transient
+    # capture file
+    [ $SAVE -eq 1 ] && echo "$CAPTURE_PATH" || echo "$SAVE_PATH"
 fi
 
 if [ $NOTIFY -eq 1 ]; then
