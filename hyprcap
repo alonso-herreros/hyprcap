@@ -972,7 +972,7 @@ if [ $RAW -eq 1 ]; then
 elif [ $VERBOSE -ge 0 ]; then
     # Prints the save path if saving is on, otherwise a path to the transient
     # capture file
-    [ $SAVE -eq 1 ] && echo "$CAPTURE_PATH" || echo "$SAVE_PATH"
+    [ $SAVE -eq 1 ] && echo "$SAVE_PATH" || echo "$CAPTURE_PATH"
 fi
 
 if [ $NOTIFY -eq 1 ]; then
