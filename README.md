@@ -56,14 +56,14 @@ The following extras are not essential, but required for some features
 Copy the `hyprcap` script to a folder in your `PATH`:
 
 ```bash
-git clone https://alonso-herreros/hyprcap.git HyprCap
+git clone https://github.com/alonso-herreros/hyprcap.git HyprCap
 cp HyprCap/hyprcap /usr/local/bin
 ```
 
 For user-level installation, you can use:
 
 ```bash
-git clone https://alonso-herreros/hyprcap.git HyprCap
+git clone https://github.com/alonso-herreros/hyprcap.git HyprCap
 cp HyprCap/hyprcap $HOME/.local/bin
 ```
 
