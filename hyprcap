@@ -499,7 +499,8 @@ function notify() {
     _notify() {
         notify-send "$title" "$message" \
             -t "$NOTIF_TIMEOUT" -a HyprCap -r $NOTIF_ID \
-            -i "$CAPTURE_PATH" "$@" >/dev/null 2>&1 &
+            -i "$CAPTURE_PATH" "$@"
+            # -i "$CAPTURE_PATH" "$@" >/dev/null 2>&1 &
     }
 
     if [ $ACTIONS -eq 1 ]; then
@@ -610,7 +611,6 @@ function args() {
                 SAVE=1
                 ;;
             -o | --output-dir)
-                SAVE=1
                 OUTPUT_DIR="$2"
                 shift;;
             -f | --filename)
@@ -982,12 +982,14 @@ elif [ $VERBOSE -ge 0 ]; then
 fi
 
 if [ $NOTIFY -eq 1 ]; then
-    while
-        action="$(notify)"
-        [ "$action" = "default" ] && action="save"
-        # If this line succeeds, the loop runs again
-        [ $ACTIONS -eq 1 -a -n "$action" ] && act "$action"
-    do true; done
+    (
+        while
+            action="$(notify)"
+            [ "$action" = "default" ] && action="save"
+            # If this line succeeds, the loop runs again
+            [ $ACTIONS -eq 1 -a -n "$action" ] && act "$action"
+        do true; done
+    ) &
 fi
 
 # This ensures a clean exit code if the last line 'fails'
