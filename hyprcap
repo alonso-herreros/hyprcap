@@ -498,7 +498,7 @@ function notify() {
     # actions.
     _notify() {
         notify-send "$title" "$message" \
-            -t "$NOTIF_TIMEOUT" -a HyprCap -r $NOTIF_ID \
+            ${NOTIF_TIMEOUT:+-t "$NOTIF_TIMEOUT"} -a HyprCap -r $NOTIF_ID \
             -i "$CAPTURE_PATH" "$@"
     }
 
@@ -869,7 +869,7 @@ DISABLE_TITLE=0 # Disable terminal title setting
 
 # Notifications
 NOTIFY=1
-NOTIF_TIMEOUT=10000
+NOTIF_TIMEOUT=
 ACTIONS=1
 
 # Output
