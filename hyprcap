@@ -97,7 +97,8 @@ Notification options:
                                 --notify.
   -t, --notif-timeout <time>    Notification timeout in milliseconds. Requires
                                 --notify
-                                Default: unspecified, up to your notification daemon's config
+                                Default: unspecified, up to your notification
+                                daemon's config
 
 Output options:
   -r, --raw                     Output raw capture data to stdout.
