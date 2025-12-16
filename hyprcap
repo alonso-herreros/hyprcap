@@ -611,6 +611,7 @@ function args() {
                 SAVE=1
                 ;;
             -o | --output-dir)
+                SAVE=1
                 OUTPUT_DIR="$2"
                 shift;;
             -f | --filename)
