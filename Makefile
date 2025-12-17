@@ -15,7 +15,9 @@ VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev
 
 all: build
 
-.PHONY: all build clean install install-bin install-docs
+.PHONY: all build clean \
+	install install-bin install-docs \
+	remove  remove-bin  remove-docs
 
 build: | $(BUILD_DIR)
 	@sed "s/^readonly VERSION=.*/readonly VERSION=\"$(VERSION)\"/" $(SOURCE_FILE) \
@@ -31,6 +33,16 @@ install-bin:
 
 install-docs:
 	install -Dm644 "$(LICENSE_FILE)" "$(INSTALL_LICENSE_DIR)/LICENSE"
+
+
+remove: remove-bin remove-docs
+
+remove-bin:
+	rm "$(INSTALL_BIN_DIR)/$(BIN_NAME)"
+
+remove-docs:
+	rm -rf "$(INSTALL_LICENSE_DIR)"
+
 
 $(BUILD_DIR):
 	mkdir -p "$(BUILD_DIR)"
