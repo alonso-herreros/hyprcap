@@ -15,7 +15,7 @@ VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev
 
 all: build
 
-.PHONY: all build install install-bin install-docs
+.PHONY: all build clean install install-bin install-docs
 
 build: | $(BUILD_DIR)
 	@sed "s/^readonly VERSION=.*/readonly VERSION=\"$(VERSION)\"/" $(SOURCE_FILE) \
@@ -34,3 +34,6 @@ install-docs:
 
 $(BUILD_DIR):
 	mkdir -p "$(BUILD_DIR)"
+
+clean:
+	rm -rf "$(BUILD_DIR)"
