@@ -1,11 +1,20 @@
-BIN_NAME  = hyprcap
+BIN_NAME = hyprcap
 
-VERSION   := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+BUILD_DIR    = bin
+SOURCE_FILE  = hyprcap
+
+VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 
 all: build
 
 .PHONY: all build
 
-build:
-	@sed -i "s/^readonly VERSION=.*/readonly VERSION=\"$(VERSION)\"/" $(BIN_NAME)
-	@echo "VERSION=$(VERSION)"
+build: | $(BUILD_DIR)
+	@sed "s/^readonly VERSION=.*/readonly VERSION=\"$(VERSION)\"/" $(SOURCE_FILE) \
+		> $(BUILD_DIR)/$(BIN_NAME)
+	@echo "Hyprcap version: $(VERSION)"
+	chmod +x "$(BUILD_DIR)/$(BIN_NAME)"
+
+
+$(BUILD_DIR):
+	mkdir -p "$(BUILD_DIR)"

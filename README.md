@@ -59,7 +59,7 @@ Copy the `hyprcap` script to a folder in your `PATH`:
 git clone https://github.com/alonso-herreros/hyprcap.git HyprCap
 cd HyprCap
 make
-cp hyprcap /usr/local/bin
+cp bin/hyprcap /usr/local/bin
 ```
 
 For user-level installation, you can use:
@@ -68,7 +68,7 @@ For user-level installation, you can use:
 git clone https://github.com/alonso-herreros/hyprcap.git HyprCap
 cd HyprCap
 make
-cp hyprcap $HOME/.local/bin
+cp bin/hyprcap $HOME/.local/bin
 ```
 
 You're free to delete the cloned repository after copying the script.
