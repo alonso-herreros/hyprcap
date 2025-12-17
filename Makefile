@@ -1,13 +1,21 @@
+PKGBASE ?= hyprcap
+PREFIX  ?= /usr/local
+DESTDIR ?=
 BIN_NAME = hyprcap
 
 BUILD_DIR    = bin
 SOURCE_FILE  = hyprcap
+LICENSE_FILE = LICENSE
+
+INSTALL_BIN_DIR     = $(DESTDIR)$(PREFIX)/bin
+INSTALL_LICENSE_DIR = $(DESTDIR)$(PREFIX)/share/licenses/$(PKGBASE)
 
 VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 
+
 all: build
 
-.PHONY: all build
+.PHONY: all build install install-bin install-docs
 
 build: | $(BUILD_DIR)
 	@sed "s/^readonly VERSION=.*/readonly VERSION=\"$(VERSION)\"/" $(SOURCE_FILE) \
@@ -15,6 +23,14 @@ build: | $(BUILD_DIR)
 	@echo "Hyprcap version: $(VERSION)"
 	chmod +x "$(BUILD_DIR)/$(BIN_NAME)"
 
+
+install: install-bin install-docs
+
+install-bin:
+	install -Dm755 "$(BUILD_DIR)/$(BIN_NAME)" -t "$(INSTALL_BIN_DIR)"
+
+install-docs:
+	install -Dm644 "$(LICENSE_FILE)" "$(INSTALL_LICENSE_DIR)/LICENSE"
 
 $(BUILD_DIR):
 	mkdir -p "$(BUILD_DIR)"
