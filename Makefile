@@ -28,7 +28,7 @@ build: | $(BUILD_DIR)
 
 install: install-bin install-docs
 
-install-bin:
+install-bin: build
 	install -Dm755 "$(BUILD_DIR)/$(BIN_NAME)" -t "$(INSTALL_BIN_DIR)"
 
 install-docs:
