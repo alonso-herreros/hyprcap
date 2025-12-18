@@ -440,16 +440,21 @@ function trim_to_monitor() {
         | jq -r --argjson x $x --argjson y $y '
             [
                 .[] # Unpack
-                # Map the horizontal and vertical
-                # TODO: Test if this is actually necessary
-                | if .transform % 2 == 0 then
-                    . + {"horiz": .width, "vert": .height}
-                else
-                    . + {"horiz": .height, "vert": .width}
-                end
+                # Map the "real" width and height
+                | .scale as $scale
+                | . + (
+                    # If transform is odd, width and height are flipped (?)
+                    if .transform % 2 == 0 then
+                        {"rwidth": .width, "rheight": .height}
+                    else
+                        {"rwidth": .height, "rheight": .width}
+                    end
+                    | map_values(. / $scale | round)
+                )
+                # Select the monitor containing the geometry origin
                 | select(
-                    (.x < $x and $x < .x+.horiz) and
-                    (.y < $y and $y < .y+.vert)
+                    (.x < $x and $x < .x+.rwidth) and
+                    (.y < $y and $y < .y+.rheight)
                 )
             ]
             | first
@@ -459,9 +464,9 @@ function trim_to_monitor() {
     Print -1 "Origin monitor: $(echo $monitor | jq -r '.name')\n"
 
     local max_width=$(echo $monitor \
-        | jq -r --argjson x $x '($x - .x) as $rel_x | .horiz - $rel_x')
+        | jq -r --argjson x $x '($x - .x) as $rel_x | .rwidth - $rel_x')
     local max_height=$(echo $monitor \
-        | jq -r --argjson y $y '($y - .y) as $rel_y | .vert - $rel_y')
+        | jq -r --argjson y $y '($y - .y) as $rel_y | .rheight - $rel_y')
 
     Print -1 "Max width x height: ${max_width}x${max_height}\n"
 
