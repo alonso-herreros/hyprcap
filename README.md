@@ -57,14 +57,18 @@ Copy the `hyprcap` script to a folder in your `PATH`:
 
 ```bash
 git clone https://github.com/alonso-herreros/hyprcap.git HyprCap
-cp HyprCap/hyprcap /usr/local/bin
+cd HyprCap
+make all
+sudo make install
 ```
 
 For user-level installation, you can use:
 
 ```bash
 git clone https://github.com/alonso-herreros/hyprcap.git HyprCap
-cp HyprCap/hyprcap $HOME/.local/bin
+cd HyprCap
+make all
+make install PREFIX="$HOME/.local"
 ```
 
 You're free to delete the cloned repository after copying the script.
