@@ -459,9 +459,9 @@ function trim_to_monitor() {
     Print -1 "Origin monitor: $(echo $monitor | jq -r '.name')\n"
 
     local max_width=$(echo $monitor \
-        | jq -r --argjson x $x '($x - .x) as rel_x | .horiz - $rel_x')
+        | jq -r --argjson x $x '($x - .x) as $rel_x | .horiz - $rel_x')
     local max_height=$(echo $monitor \
-        | jq -r --argjson y $y '($y - .y) as rel_y | .vert - $rel_y')
+        | jq -r --argjson y $y '($y - .y) as $rel_y | .vert - $rel_y')
 
     Print -1 "Max width x height: ${max_width}x${max_height}\n"
 
