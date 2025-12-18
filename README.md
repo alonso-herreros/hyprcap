@@ -67,8 +67,8 @@ For user-level installation, you can use:
 ```bash
 git clone https://github.com/alonso-herreros/hyprcap.git HyprCap
 cd HyprCap
-make all install
-PREFIX="$HOME/.local" sudo make install
+make all
+make install PREFIX="$HOME/.local"
 ```
 
 You're free to delete the cloned repository after copying the script.
