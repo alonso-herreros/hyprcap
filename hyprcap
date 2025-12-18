@@ -470,17 +470,10 @@ function trim_to_monitor() {
 
     Print -1 "Max width x height: ${max_width}x${max_height}\n"
 
-    local trimmed_width=$width
-    local trimmed_height=$height
+    [ $width -gt $max_width ]   && local trim_width=$max_width
+    [ $height -gt $max_height ] && local trim_height=$max_height
 
-    if [ $((x + width)) -gt $max_width ]; then
-        trimmed_width=$((max_width - x))
-    fi
-    if [ $((y + height)) -gt $max_height ]; then
-        trimmed_height=$((max_height - y))
-    fi
-
-    local trimmed="${x},${y} ${trimmed_width}x${trimmed_height}"
+    local trimmed="${x},${y} ${trim_width:-$width}x${trim_height:-$height}"
 
     Print -1 "Trimmed: ${trimmed}\n"
     echo ${trimmed}
