@@ -38,7 +38,7 @@ install-docs:
 remove: remove-bin remove-docs
 
 remove-bin:
-	rm "$(INSTALL_BIN_DIR)/$(BIN_NAME)"
+	rm -f "$(INSTALL_BIN_DIR)/$(BIN_NAME)"
 
 remove-docs:
 	rm -rf "$(INSTALL_LICENSE_DIR)"
