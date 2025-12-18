@@ -945,6 +945,11 @@ case "$GEOMETRY" in
         Exit 1;;
 esac
 
+case "$COMMAND" in record | record-start )
+    Print -1 "Trimming recording geometry.\n"
+    GEOMETRY="$(trim_to_monitor "$GEOMETRY")"
+esac
+
 Print -1 "Geometry: $GEOMETRY\n"
 
 # ---- Pre-capture ----
