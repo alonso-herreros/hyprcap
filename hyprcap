@@ -475,9 +475,8 @@ function trim_to_monitor() {
         trimmed_height=$((max_height - y))
     fi
 
-    Print -1 "Trimmed width x height: ${max_width}x${max_height}\n"
-
     local trimmed="${x},${y} ${trimmed_width}x${trimmed_height}"
+
     Print -1 "Trimmed: ${trimmed}\n"
     echo ${trimmed}
 }
