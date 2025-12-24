@@ -61,6 +61,8 @@ Selection options:
 Saving options:
   -w, --write                   Save the capture to a file using the default
                                 filename and directory.
+  -W, --no-write                Don't save captures to a file (default).
+  -F, --no-file                 Same as \`--no-write\`
   -o, --output-dir <dir>        Directory in which to save captures.
                                 Default: \$XDG_PICTURES_DIR/Screenshots or
                                 \$XDG_VIDEOS_DIR/Captures
@@ -73,7 +75,6 @@ Saving options:
                                   YYYY-MM-DD-hhmmss_hyprcap.<extension>
                                 where <extension> is determined by the command
                                 (see the \`--filetype\` defaults).
-  -F, --no-file                 Don't save captures to a file (default).
       --filetype <type>         Force a file type for the capture. For
                                 supported types, see the documentation for grim
                                 and wf-recorder.
@@ -619,7 +620,7 @@ function args() {
                 SAVE=1
                 FILENAME="$2"
                 shift;;
-            -F | --no-file)
+            -W | --no-write | -F | --no-file)
                 SAVE=0
                 ;;
             --filetype)
