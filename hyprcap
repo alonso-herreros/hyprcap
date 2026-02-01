@@ -130,7 +130,7 @@ function Version() {
 }
 
 function NYI() {
-    Print -E "Fatal: You have requested a feature that is not yet implemented\n"
+    Print -F "Fatal: You have requested a feature that is not yet implemented\n"
 }
 
 function Print() {
@@ -703,7 +703,7 @@ function args() {
     # -- Command --
     # Check if a command was specified
     if [ -z "$1" ]; then
-        Print -E "Fatal: No command specified. Use --help for help.\n"
+        Print -F "Fatal: No command specified. Use --help for help.\n"
         exit 1
     fi
     COMMAND=$(parse_command "$1")
@@ -742,7 +742,7 @@ function parse_command() {
             echo "record-stop"
             ;;
         *)
-            Print -E "Fatal: Unknown command '$1'\n"
+            Print -F "Fatal: Unknown command '$1'\n"
             Exit 1
             ;;
     esac
@@ -917,7 +917,7 @@ CAPTURE_PATH="$CACHE_DIR/$CAPTURE_FILENAME"
 if [ "$COMMAND" = "record-stop" ]; then
     Print -1 "Stopping recording...\n"
     if ! record_stop; then
-        Print -E "Fatal: Failed to stop screen recording.\n"
+        Print -F "Fatal: Failed to stop screen recording.\n"
         Exit 1
     fi
     Exit 0
@@ -935,7 +935,7 @@ fi
 
 # Handle no selection
 if [ -z "$SELECTION" -a "$COMMAND" != "record-stop" ]; then
-    Print -E "Fatal: No selection specified. Use --help for help.\n"
+    Print -F "Fatal: No selection specified. Use --help for help.\n"
     Exit 1
 fi
 
@@ -950,7 +950,7 @@ case "$GEOMETRY" in
     *[0-9]*,*[0-9]*' '[0-9]*x[0-9]*) # Valid geometry
         ;;
     *)
-        Print -E "Fatal: Resolved geometry '$GEOMETRY' is invalid.\n"
+        Print -F "Fatal: Resolved geometry '$GEOMETRY' is invalid.\n"
         Exit 1;;
 esac
 
@@ -976,19 +976,19 @@ case "$COMMAND" in
     screenshot)
         if ! screenshot; then
             # If the screenshot command fails, exit with an error
-            Print -E "Fatal: Failed to take a screenshot.\n"
+            Print -F "Fatal: Failed to take a screenshot.\n"
             Exit 1
         fi
         ;;
     record | record-start)
         if ! record_start; then
-            Print -E "Fatal: Screen recording failed.\n"
+            Print -F "Fatal: Screen recording failed.\n"
             Exit 1
         fi
         ;;
     # TODO: Maybe add a simple command to print the geometry
     *)
-        Print -E "Fatal: Unknown command '$COMMAND'.\n"
+        Print -F "Fatal: Unknown command '$COMMAND'.\n"
         Exit 1
         ;;
 esac
