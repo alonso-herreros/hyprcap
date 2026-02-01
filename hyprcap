@@ -127,6 +127,27 @@ EOF
 
 function Version() {
     echo "HyprCap version $VERSION"
+
+    # If verbose not set, we're done
+    [ "$VERBOSE" -lt 1 ] && return 0
+
+    for cmd in \
+        wf-recorder grim slurp hyprctl jq \
+        wl-clipboard hyprpicker notify-send fuzzel
+    do
+        if command -v "$cmd" >/dev/null; then
+            case "$cmd" in
+                grim | slurp ) # Don't have a version flag
+                    echo "$cmd is present";;
+                hyprctl ) # Version requested as subcommand
+                    $cmd version;;
+                *)
+                    $cmd --version;;
+            esac
+        else
+            echo "$cmd not found"
+        fi
+    done
 }
 
 function NYI() {
