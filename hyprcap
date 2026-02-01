@@ -130,25 +130,30 @@ function Version() {
 }
 
 function NYI() {
-    Print -F "Fatal: You have requested a feature that is not yet implemented\n"
+    Print -F "You have requested a feature that is not yet implemented\n"
 }
 
 function Print() {
     # Prints to stderr if $VERBOSE is greater than or equal to the level X
-    # specified with `Print -X 'message'`.
+    # specified with `Print -X 'message'`. If X is semantic (a letter), the
+    # level is prepended to the output.
     local level=
+    local prefix=
     case "$1" in
-        -F) level=-2;; # Fatal
-        -E) level=-1;; # Error
-        -W) level=0;;  # Warning
-        -I) level=1;;  # Info
-        -D) level=2;;  # Debug
+        -F) level=-2; prefix='Fatal: ';;
+        -E) level=-1; prefix='Error: ';;
+        -W) level=0;  prefix='Warn:  ';;
+        -I) level=1;  prefix='Info:  ';;
+        -D) level=2;  prefix='Debug: ';;
         -*) level=${1#-};;
     esac
     # Default level is 0. Remove first arg if level *was* set.
     [ -z "$level" ] && level=0 || shift
 
-    [ $VERBOSE -ge ${level:-0} ] && printf "$@" 1>&2
+    if [ $VERBOSE -ge ${level:-0} ]; then
+        printf "$prefix"
+        printf "$@"
+    fi >&2
 }
 
 function Exit() {
@@ -168,12 +173,12 @@ function check_cmd() {
     # If command is found, return early
     command -v "$cmd" >/dev/null && return 0
 
-    # If command is not found, print error and return with error
-    Print -E "Error: command '$cmd' not found. "
-    Print -E "Check the list of optional dependencies and options selected.\n"
-    Print -E "You may be able to install it using your package manager.\n\n"
-    Print -E "Check the README for more information:\n"
-    Print -E "https://github.com/alonso-herreros/hyprcap"
+    # If command is not found, print warning and return with error
+    Print -E "Command '$cmd' not found.
+        Check the list of optional dependencies and options selected.
+        You may be able to install it using your package manager.
+        Check the README for more information:
+        https://github.com/alonso-herreros/hyprcap"
     return 1
 }
 
@@ -192,7 +197,7 @@ function record_start() {
     Print -I "Starting screen recording of $GEOMETRY\n"
 
     if [ -r "$REC_PID_PATH" ]; then
-        Print -E "Error: Screen recording is already in progress.\n"
+        Print -E "Screen recording is already in progress.\n"
         return 1
     fi
 
@@ -233,14 +238,14 @@ function record_stop() {
     trap - INT # Remove the SIGINT trap
 
     if [ ! -r "$REC_PID_PATH" ]; then
-        Print -E "Error: No screen recording PID found.\n"
+        Print -E "No screen recording PID found.\n"
         return 1
     fi
 
     local rec_pid=$(cat "$REC_PID_PATH")
 
     if ! kill -INT "$rec_pid"; then
-        Print -E "Error: Failed to send a stop signal.\n"
+        Print -E "Failed to send a stop signal.\n"
         return 1
     fi
 }
@@ -317,7 +322,7 @@ function grab_monitor_match() {
     Print -D "Matching monitor: $matching_monitor\n"
 
     if [ -z "$matching_monitor" ]; then
-        Print -E "Error: No monitor with name '$name' found.\n"
+        Print -E "No monitor with name '$name' found.\n"
         return 1
     fi
 
@@ -343,7 +348,7 @@ function grab_window_active() {
     Print -D "Active window: $active_window\n"
 
     if [ "$active_window" = "{}" ]; then
-        Print -E "Error: No active window found.\n"
+        Print -E "No active window found.\n"
         return 1
     fi
 
@@ -362,7 +367,7 @@ function grab_window_match() {
     Print -D "First matching window: $matching_window\n"
 
     if [ "$matching_window" = "null" ]; then
-        Print -E "Error: No window with title '$title' found.\n"
+        Print -E "No window with title '$title' found.\n"
         return 1
     fi
 
@@ -546,7 +551,7 @@ function act() {
         # edit)
         #     edit_capture;;
         *)
-            Print -E "Error: Unknown action '$1'.\n"
+            Print -E "Unknown action '$1'.\n"
             return 1
             ;;
     esac
@@ -586,7 +591,7 @@ function unfreeze() {
         kill "$HYPRPICKER_PID"
         unset HYPRPICKER_PID
     else # In case we messed up
-        Print -E "Error: lost the hyprpicker PID, using pkill.\n"
+        Print -E "lost the hyprpicker PID, using pkill.\n"
         pkill hyprpicker
         return 1
     fi
@@ -597,7 +602,7 @@ function freeze() {
     Print -I "Freezing the screen\n"
 
     if [ -n "$HYPRPICKER_PID" ]; then
-        Print -E "Error: hyprpicker is already running.\n"
+        Print -E "hyprpicker is already running.\n"
         return 1
     fi
 
@@ -606,7 +611,7 @@ function freeze() {
         HYPRPICKER_PID=$!
         sleep 0.2
     else
-        Print -E "Error: hyprpicker is not installed. Cannot freeze.\n"
+        Print -E "hyprpicker is not installed. Cannot freeze.\n"
         return 1
     fi
 }
@@ -703,7 +708,7 @@ function args() {
     # -- Command --
     # Check if a command was specified
     if [ -z "$1" ]; then
-        Print -F "Fatal: No command specified. Use --help for help.\n"
+        Print -F "No command specified. Use --help for help.\n"
         exit 1
     fi
     COMMAND=$(parse_command "$1")
@@ -742,7 +747,7 @@ function parse_command() {
             echo "record-stop"
             ;;
         *)
-            Print -F "Fatal: Unknown command '$1'\n"
+            Print -F "Unknown command '$1'\n"
             Exit 1
             ;;
     esac
@@ -776,7 +781,7 @@ function parse_selection() {
             SELECTION="${selection%,*} ${selection#*,*,}"
             ;;
         *)
-            Print -E "Error: Unknown selection '$1'\n"
+            Print -E "Unknown selection '$1'\n"
             return 1;;
     esac
 }
@@ -917,7 +922,7 @@ CAPTURE_PATH="$CACHE_DIR/$CAPTURE_FILENAME"
 if [ "$COMMAND" = "record-stop" ]; then
     Print -I "Stopping recording...\n"
     if ! record_stop; then
-        Print -F "Fatal: Failed to stop screen recording.\n"
+        Print -F "Failed to stop screen recording.\n"
         Exit 1
     fi
     Exit 0
@@ -935,7 +940,7 @@ fi
 
 # Handle no selection
 if [ -z "$SELECTION" -a "$COMMAND" != "record-stop" ]; then
-    Print -F "Fatal: No selection specified. Use --help for help.\n"
+    Print -F "No selection specified. Use --help for help.\n"
     Exit 1
 fi
 
@@ -950,7 +955,7 @@ case "$GEOMETRY" in
     *[0-9]*,*[0-9]*' '[0-9]*x[0-9]*) # Valid geometry
         ;;
     *)
-        Print -F "Fatal: Resolved geometry '$GEOMETRY' is invalid.\n"
+        Print -F "Resolved geometry '$GEOMETRY' is invalid.\n"
         Exit 1;;
 esac
 
@@ -976,19 +981,19 @@ case "$COMMAND" in
     screenshot)
         if ! screenshot; then
             # If the screenshot command fails, exit with an error
-            Print -F "Fatal: Failed to take a screenshot.\n"
+            Print -F "Failed to take a screenshot.\n"
             Exit 1
         fi
         ;;
     record | record-start)
         if ! record_start; then
-            Print -F "Fatal: Screen recording failed.\n"
+            Print -F "Screen recording failed.\n"
             Exit 1
         fi
         ;;
     # TODO: Maybe add a simple command to print the geometry
     *)
-        Print -F "Fatal: Unknown command '$COMMAND'.\n"
+        Print -F "Unknown command '$COMMAND'.\n"
         Exit 1
         ;;
 esac
