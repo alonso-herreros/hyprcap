@@ -133,12 +133,14 @@ function Version() {
 
     for cmd in \
         wf-recorder grim slurp hyprctl jq \
-        wl-clipboard hyprpicker notify-send fuzzel
+        wl-copy hyprpicker notify-send fuzzel
     do
         if command -v "$cmd" >/dev/null; then
             case "$cmd" in
                 grim | slurp ) # Don't have a version flag
                     echo "$cmd is present";;
+                wl-copy ) # Too much information
+                    $cmd --version | head -n 1;;
                 hyprctl ) # Version requested as subcommand
                     $cmd version;;
                 *)
