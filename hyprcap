@@ -54,6 +54,9 @@ Selection:
   region                    Select a region manually using 'slurp'.
   region:X,Y,WxH            Select the specified region.
 
+  * Note: Any selection will be trimmed to a single monitor when recording due
+    to limitations in 'wf-recorder'
+
 
 Selection options:
   -s, --select <selection>      Alternative way to specify the selection.
@@ -425,50 +428,60 @@ function trim_slurp_border() {
 
 # Grim can capture multiple monitors and in even outside of them. However,
 # wf-recorder cannot and fails. This should trim the geometry to one monitor.
-# function trim_to_monitor() {
-#     Print "Trimming '$1' to fit in one monitor\n"
-#     local geometry="$1"
+function trim_to_monitor() {
+    Print -1 "Trimming '$1' to fit in one monitor\n"
+    local geometry="$1"
 
-#     local xy_str=${geometry% *} # Get the first part (X,Y)
-#     local wh_str=${geometry#* } # Get the second part (WxH)
-#     local x=${xy_str%,*}        # Get the X coordinate
-#     local y=${xy_str#*,}        # Get the Y coordinate
-#     local width=${wh_str%x*}    # Get the width
-#     local height=${wh_str#*x}   # Get the height
+    local xy_str=${geometry% *} # Get the first part (X,Y)
+    local wh_str=${geometry#* } # Get the second part (WxH)
+    local x=${xy_str%,*}        # Get the X coordinate
+    local y=${xy_str#*,}        # Get the Y coordinate
+    local width=${wh_str%x*}    # Get the width
+    local height=${wh_str#*x}   # Get the height
 
-#     local max_width=$(hyprctl monitors -j | jq -r '[.[] | if (.transform % 2 == 0) then (.x + .width) else (.x + .height) end] | max')
-#     local max_height=$(hyprctl monitors -j | jq -r '[.[] | if (.transform % 2 == 0) then (.y + .height) else (.y + .width) end] | max')
+    local monitor=$(
+        hyprctl monitors -j \
+        | jq -r --argjson x $x --argjson y $y '
+            [
+                .[] # Unpack
+                # Map the "real" width and height
+                | .scale as $scale
+                | . + (
+                    # If transform is odd, width and height are flipped (?)
+                    if .transform % 2 == 0 then
+                        {"rwidth": .width, "rheight": .height}
+                    else
+                        {"rwidth": .height, "rheight": .width}
+                    end
+                    | map_values(. / $scale | round)
+                )
+                # Select the monitor containing the geometry origin
+                | select(
+                    (.x < $x and $x < .x+.rwidth) and
+                    (.y < $y and $y < .y+.rheight)
+                )
+            ]
+            | first
+         '
+    )
 
-#     local min_x=$(hyprctl monitors -j | jq -r '[.[] | (.x)] | min')
-#     local min_y=$(hyprctl monitors -j | jq -r '[.[] | (.y)] | min')
+    Print -1 "Origin monitor: $(echo $monitor | jq -r '.name')\n"
 
-#     local cropped_x=$x
-#     local cropped_y=$y
-#     local cropped_width=$width
-#     local cropped_height=$height
+    local max_width=$(echo $monitor \
+        | jq -r --argjson x $x '($x - .x) as $rel_x | .rwidth - $rel_x')
+    local max_height=$(echo $monitor \
+        | jq -r --argjson y $y '($y - .y) as $rel_y | .rheight - $rel_y')
 
-#     if ((x + width > max_width)); then
-#         cropped_width=$((max_width - x))
-#     fi
-#     if ((y + height > max_height)); then
-#         cropped_height=$((max_height - y))
-#     fi
+    Print -1 "Max width x height: ${max_width}x${max_height}\n"
 
-#     if ((x < min_x)); then
-#         cropped_x="$min_x"
-#         cropped_width=$((cropped_width + x - min_x))
-#     fi
-#     if ((y < min_y)); then
-#         cropped_y="$min_y"
-#         cropped_height=$((cropped_height + y - min_y))
-#     fi
+    [ $width -gt $max_width ]   && local trim_width=$max_width
+    [ $height -gt $max_height ] && local trim_height=$max_height
 
-#     local cropped=$(printf "%s,%s %sx%s\n" \
-#         "${cropped_x}" "${cropped_y}" \
-#         "${cropped_width}" "${cropped_height}")
-#     Print "Crop: %s\n" "${cropped}"
-#     echo ${cropped}
-# }
+    local trimmed="${x},${y} ${trim_width:-$width}x${trim_height:-$height}"
+
+    Print -1 "Trimmed: ${trimmed}\n"
+    echo ${trimmed}
+}
 
 # =============== Secondary operations ===============
 
@@ -931,6 +944,11 @@ case "$GEOMETRY" in
     *)
         Print -E "Fatal: Resolved geometry '$GEOMETRY' is invalid.\n"
         Exit 1;;
+esac
+
+case "$COMMAND" in record | record-start )
+    Print -1 "Trimming recording geometry.\n"
+    GEOMETRY="$(trim_to_monitor "$GEOMETRY")"
 esac
 
 Print -1 "Geometry: $GEOMETRY\n"
