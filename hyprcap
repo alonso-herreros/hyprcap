@@ -702,8 +702,8 @@ function args() {
                 VERBOSE=-1
                 ;;
             -V | --version)
-                Version
-                exit 0;;
+                COMMAND=version
+                ;;
             -h | --help)
                 Help
                 exit 0;;
@@ -714,6 +714,11 @@ function args() {
         shift
     done
     shift # Remove the command itself from the arguments
+
+    if [ "$COMMAND" == "version" ]; then
+        Version
+        exit 0
+    fi
 
     # -- Command --
     # Check if a command was specified
