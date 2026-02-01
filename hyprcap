@@ -54,6 +54,9 @@ Selection:
   region                    Select a region manually using 'slurp'.
   region:X,Y,WxH            Select the specified region.
 
+  * Note: Any selection will be trimmed to a single monitor when recording due
+    to limitations in 'wf-recorder'
+
 
 Selection options:
   -s, --select <selection>      Alternative way to specify the selection.
