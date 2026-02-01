@@ -153,7 +153,7 @@ function Print() {
 
 function Exit() {
     local exit_code=${1:-0}
-    Print -1 "Exiting with code $exit_code\n"
+    Print -I "Exiting with code $exit_code\n"
 
     if [ $FREEZE -eq 1 ]; then
         unfreeze
@@ -183,13 +183,13 @@ function check_cmd() {
 # --------------- Capture functions ---------------
 
 function screenshot() {
-    Print -1 "Making screenshot of $GEOMETRY\n"
+    Print -I "Making screenshot of $GEOMETRY\n"
 
     grim -g "$GEOMETRY" -t "$FILETYPE" "$CAPTURE_PATH"
 }
 
 function record_start() {
-    Print -1 "Starting screen recording of $GEOMETRY\n"
+    Print -I "Starting screen recording of $GEOMETRY\n"
 
     if [ -r "$REC_PID_PATH" ]; then
         Print -E "Error: Screen recording is already in progress.\n"
@@ -205,15 +205,15 @@ function record_start() {
 
     # This lets the shell pass the SIGINT signal to the recording process
     # instead of getting killed while waiting.
-    Print -1 "Setting up SIGINT trap.\n"
+    Print -I "Setting up SIGINT trap.\n"
     trap 'record_stop' INT
 
     # Then we wait for the recording to finish. Then we can move on to
     # operations (notifications, saving, etc.)
-    Print -1 "Waiting for process $rec_pid to finish...\n"
+    Print -I "Waiting for process $rec_pid to finish...\n"
     wait "$rec_pid"
     local exit_code=$?
-    Print -1 "Process $rec_pid finished with code $exit_code.\n"
+    Print -I "Process $rec_pid finished with code $exit_code.\n"
 
     # Wait for al subprocesses to finish too, otherwise we may find
     # incomplete files.
@@ -228,7 +228,7 @@ function record_start() {
 }
 
 function record_stop() {
-    Print -1 "Stopping screen recording\n"
+    Print -I "Stopping screen recording\n"
 
     trap - INT # Remove the SIGINT trap
 
@@ -300,9 +300,9 @@ function grab_monitor_active() {
     local active_monitor="$(echo $monitors \
         | jq -r '.[] | select(.activeWorkspace.id == '$active_workspace_id')')"
 
-    Print -2 "Active workspace ID: $active_workspace_id\n"
-    Print -2 "Monitors: $monitors\n"
-    Print -2 "Current monitor: $active_monitor\n"
+    Print -D "Active workspace ID: $active_workspace_id\n"
+    Print -D "Monitors: $monitors\n"
+    Print -D "Current monitor: $active_monitor\n"
 
     echo $active_monitor | geometry_from_monitor
 }
@@ -313,8 +313,8 @@ function grab_monitor_match() {
     local matching_monitor=$(echo $monitors \
         | jq --arg name "$name" -r '.[] | select(.name == $name)')
 
-    Print -2 "Monitors: $monitors\n"
-    Print -2 "Matching monitor: $matching_monitor\n"
+    Print -D "Monitors: $monitors\n"
+    Print -D "Matching monitor: $matching_monitor\n"
 
     if [ -z "$matching_monitor" ]; then
         Print -E "Error: No monitor with name '$name' found.\n"
@@ -327,12 +327,12 @@ function grab_monitor_match() {
 function grab_window() {
     local visible_windows=$(get_visible_windows)
 
-    Print -2 "Visible windows: $visible_windows\n"
+    Print -D "Visible windows: $visible_windows\n"
 
     # Generate boxes for each visible window and send that to slurp
     local boxes="$(echo $visible_windows | jq '.[]' | geometry_from_window)"
 
-    Print -1 "Window boxes:\n$boxes\n"
+    Print -I "Window boxes:\n$boxes\n"
 
     echo "$boxes" | slurp -r
 }
@@ -340,7 +340,7 @@ function grab_window() {
 function grab_window_active() {
     local active_window=$(hyprctl -j activewindow)
 
-    Print -2 "Active window: $active_window\n"
+    Print -D "Active window: $active_window\n"
 
     if [ "$active_window" = "{}" ]; then
         Print -E "Error: No active window found.\n"
@@ -357,9 +357,9 @@ function grab_window_match() {
         | jq --arg title "$title" -r 'map(select(.title | contains($title)))')
     local matching_window=$(echo $matching_windows | jq -r 'first')
 
-    Print -2 "Visible windows: $visible_windows\n"
-    Print -2 "Matching windows: $matching_windows\n"
-    Print -2 "First matching window: $matching_window\n"
+    Print -D "Visible windows: $visible_windows\n"
+    Print -D "Matching windows: $matching_windows\n"
+    Print -D "First matching window: $matching_window\n"
 
     if [ "$matching_window" = "null" ]; then
         Print -E "Error: No window with title '$title' found.\n"
@@ -379,8 +379,8 @@ function get_visible_windows() {
     local fullscreen_ids=$(echo $workspaces \
         | jq 'map(select(.hasfullscreen) | .id)')
 
-    Print -2 "Active workspaces IDs: $active_ids\n"
-    Print -2 "Fullscreen workspaces IDs: $fullscreen_ids\n"
+    Print -D "Active workspaces IDs: $active_ids\n"
+    Print -D "Fullscreen workspaces IDs: $fullscreen_ids\n"
 
     local windows=$(hyprctl -j clients)
     # Windows need to:
@@ -437,7 +437,7 @@ function trim_slurp_border() {
 # Grim can capture multiple monitors and in even outside of them. However,
 # wf-recorder cannot and fails. This should trim the geometry to one monitor.
 function trim_to_monitor() {
-    Print -1 "Trimming '$1' to fit in one monitor\n"
+    Print -I "Trimming '$1' to fit in one monitor\n"
     local geometry="$1"
 
     local xy_str=${geometry% *} # Get the first part (X,Y)
@@ -473,21 +473,21 @@ function trim_to_monitor() {
          '
     )
 
-    Print -1 "Origin monitor: $(echo $monitor | jq -r '.name')\n"
+    Print -I "Origin monitor: $(echo $monitor | jq -r '.name')\n"
 
     local max_width=$(echo $monitor \
         | jq -r --argjson x $x '($x - .x) as $rel_x | .rwidth - $rel_x')
     local max_height=$(echo $monitor \
         | jq -r --argjson y $y '($y - .y) as $rel_y | .rheight - $rel_y')
 
-    Print -1 "Max width x height: ${max_width}x${max_height}\n"
+    Print -I "Max width x height: ${max_width}x${max_height}\n"
 
     [ $width -gt $max_width ]   && local trim_width=$max_width
     [ $height -gt $max_height ] && local trim_height=$max_height
 
     local trimmed="${x},${y} ${trim_width:-$width}x${trim_height:-$height}"
 
-    Print -1 "Trimmed: ${trimmed}\n"
+    Print -I "Trimmed: ${trimmed}\n"
     echo ${trimmed}
 }
 
@@ -513,7 +513,7 @@ function notify() {
     [ $COPY -eq 1 ] && message+="Copied to the clipboard.\n"
     [ $SAVE -eq 1 ] && message+="Saved in <i>$SAVE_PATH</i>.\n"
 
-    Print -1 "Notifying for command '$COMMAND':\n$message[EOT]\n"
+    Print -I "Notifying for command '$COMMAND':\n$message[EOT]\n"
 
     # TODO: Create a thumbnail for video recordings
 
@@ -536,7 +536,7 @@ function notify() {
 # --------------- Post-capture actions ---------------
 
 function act() {
-    Print -1 "Notification action requested: $1\n"
+    Print -I "Notification action requested: $1\n"
     case "$1" in
         save)
             # TODO: implement choosing through an xdg-desktop-portal file dialog
@@ -555,7 +555,7 @@ function act() {
 function save_capture() {
     SAVE=1 # In case it was called for other reasons
 
-    Print -1 "Saving capture to '$SAVE_PATH'\n"
+    Print -I "Saving capture to '$SAVE_PATH'\n"
 
     mkdir -p "$OUTPUT_DIR"
     cp "$CAPTURE_PATH" "$SAVE_PATH"
@@ -564,7 +564,7 @@ function save_capture() {
 function copy_capture() {
     COPY=1 # In case it was called for other reasons
 
-    Print -1 "Copying capture to clipboard\n"
+    Print -I "Copying capture to clipboard\n"
 
     if [ "$COMMAND" == "screenshot" ]; then
         wl-copy --type image/png < "$CAPTURE_PATH"
@@ -580,7 +580,7 @@ function copy_capture() {
 # --------------- Freezing ---------------
 
 function unfreeze() {
-    Print -1 "Unfreezing the screen\n"
+    Print -I "Unfreezing the screen\n"
 
     if [ -n "$HYPRPICKER_PID" ]; then
         kill "$HYPRPICKER_PID"
@@ -594,7 +594,7 @@ function unfreeze() {
 
 function freeze() {
     FREEZE=1 # In case it was called for other reasons
-    Print -1 "Freezing the screen\n"
+    Print -I "Freezing the screen\n"
 
     if [ -n "$HYPRPICKER_PID" ]; then
         Print -E "Error: hyprpicker is already running.\n"
@@ -732,7 +732,7 @@ function parse_command() {
             echo "screenshot"
             ;;
         rec | record)
-            Print -1 "Resolving recording toggle.\n"
+            Print -I "Resolving recording toggle.\n"
             [ -f "$REC_PID_PATH" ] && echo "record-stop" || echo "record-start"
             ;;
         rec-start | record-start)
@@ -792,7 +792,7 @@ function prompt_selection() {
     option_name=$(echo "$dmenu_text" | $DMENU_COMMAND)
 
     if [ -z "$option_name" ]; then
-        Print -1 "Selection menu cancelled.\n"
+        Print -I "Selection menu cancelled.\n"
         return 1
     fi
 
@@ -821,7 +821,7 @@ function solve_filetype() {
     case "$FILENAME" in *.*) # If the filename has an dot in it
         DETECTED_EXTENSION="${FILENAME##*.}";; # Extension of the filename
     esac
-    Print -2 "Detected extension: '$DETECTED_EXTENSION'\n"
+    Print -D "Detected extension: '$DETECTED_EXTENSION'\n"
 
     if [ -z "$FILETYPE" ]; then
         if [ -n "$DETECTED_EXTENSION" ]; then
@@ -833,7 +833,7 @@ function solve_filetype() {
             esac
         fi
     fi
-    Print -2 "Solved filetype: '$FILETYPE'\n"
+    Print -D "Solved filetype: '$FILETYPE'\n"
 }
 
 function solve_filenames() {
@@ -846,11 +846,11 @@ function solve_filenames() {
     if [ -z "$FILENAME" ]; then
         FILENAME="$DEF_BASENAME.$extension"
     fi
-    Print -2 "Solved save filename: '$FILENAME'\n"
+    Print -D "Solved save filename: '$FILENAME'\n"
 
     # Capture filename
     CAPTURE_FILENAME="$CAPTURE_BASENAME.$extension"
-    Print -2 "Solved capture filename: '$CAPTURE_FILENAME'\n"
+    Print -D "Solved capture filename: '$CAPTURE_FILENAME'\n"
 }
 
 function solve_dirs() {
@@ -860,7 +860,7 @@ function solve_dirs() {
             record*)    OUTPUT_DIR="$DEF_RECORDING_DIR";;
         esac
     fi
-    Print -2 "Solved save dir: '$OUTPUT_DIR'\n"
+    Print -D "Solved save dir: '$OUTPUT_DIR'\n"
 }
 
 # =============== Main flow ===============
@@ -903,8 +903,8 @@ RAW=0
 # ---- Parse arguments ----
 args $0 "$@"
 
-Print -1 "Running HyprCap version $VERSION\n"
-Print -1 "Command selected: $COMMAND\n"
+Print -I "Running HyprCap version $VERSION\n"
+Print -I "Command selected: $COMMAND\n"
 
 solve_filetype
 solve_filenames
@@ -915,7 +915,7 @@ CAPTURE_PATH="$CACHE_DIR/$CAPTURE_FILENAME"
 
 # ---- Early exit commands ----
 if [ "$COMMAND" = "record-stop" ]; then
-    Print -1 "Stopping recording...\n"
+    Print -I "Stopping recording...\n"
     if ! record_stop; then
         Print -F "Fatal: Failed to stop screen recording.\n"
         Exit 1
@@ -939,8 +939,8 @@ if [ -z "$SELECTION" -a "$COMMAND" != "record-stop" ]; then
     Exit 1
 fi
 
-Print -1 "Selection: $SELECTION"
-Print -1 " (active: ${SELECT_ACTIVE:-no}, match: '$SELECT_MATCH')\n"
+Print -I "Selection: $SELECTION"
+Print -I " (active: ${SELECT_ACTIVE:-no}, match: '$SELECT_MATCH')\n"
 
 # ---- Get geometry ----
 
@@ -955,16 +955,16 @@ case "$GEOMETRY" in
 esac
 
 case "$COMMAND" in record | record-start )
-    Print -1 "Trimming recording geometry.\n"
+    Print -I "Trimming recording geometry.\n"
     GEOMETRY="$(trim_to_monitor "$GEOMETRY")"
 esac
 
-Print -1 "Geometry: $GEOMETRY\n"
+Print -I "Geometry: $GEOMETRY\n"
 
 # ---- Pre-capture ----
 # String comparison doesn't fail with decimals and allows explicit 0
 if [ -n "$DELAY" ]; then
-    Print -1 "Delaying for $DELAY seconds...\n"
+    Print -I "Delaying for $DELAY seconds...\n"
     sleep $DELAY
 fi
 
