@@ -134,12 +134,20 @@ function NYI() {
 }
 
 function Print() {
-    # Sort of like an if with a string pattern match
-    case "$1" in -*)
-        local level=${1#-}
-        shift;;
+    # Prints to stderr if $VERBOSE is greater than or equal to the level X
+    # specified with `Print -X 'message'`.
+    local level=
+    case "$1" in
+        -F) level=-2;; # Fatal
+        -E) level=-1;; # Error
+        -W) level=0;;  # Warning
+        -I) level=1;;  # Info
+        -D) level=2;;  # Debug
+        -*) level=${1#-};;
     esac
-    [ "$level" == "E" ] && level=-1 # Error level
+    # Default level is 0. Remove first arg if level *was* set.
+    [ -z "$level" ] && level=0 || shift
+
     [ $VERBOSE -ge ${level:-0} ] && printf "$@" 1>&2
 }
 
