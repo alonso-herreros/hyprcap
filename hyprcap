@@ -576,6 +576,18 @@ function unfreeze() {
 
     if [ -n "$HYPRPICKER_PID" ]; then
         kill "$HYPRPICKER_PID"
+
+        # Wait up to 5 seconds for its clean termination
+        for i in {1..50}; do
+            sleep 0.1
+            kill -0 "$HYPRPICKER_PID" 2>/dev/null || break
+        done
+
+        # If it's still there, SIGKILL it
+        if kill -0 "$HYPRPICKER_PID" 2>/dev/null; then
+            kill -9 "$HYPRPICKER_PID"
+        fi
+
         unset HYPRPICKER_PID
     else # In case we messed up
         Print -E "Error: lost the hyprpicker PID, using pkill.\n"
