@@ -577,15 +577,14 @@ function unfreeze() {
     if [ -n "$HYPRPICKER_PID" ]; then
         kill "$HYPRPICKER_PID"
 
-        # Wait up to 5 seconds for its clean termination
-        for i in {1..50}; do
+        for i in {1..10}; do
             sleep 0.1
             kill -0 "$HYPRPICKER_PID" 2>/dev/null || break
         done
 
-        # If it's still there, SIGKILL it
-        if kill -0 "$HYPRPICKER_PID" 2>/dev/null; then
-            kill -9 "$HYPRPICKER_PID"
+        if kill -1 "$HYPRPICKER_PID"; then
+            Print "Warning: hyprpicker still running, killing with signal 1\n"
+            sleep 2
         fi
 
         unset HYPRPICKER_PID
