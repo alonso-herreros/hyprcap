@@ -583,13 +583,9 @@ function unfreeze() {
     if [ -n "$HYPRPICKER_PID" ]; then
         kill "$HYPRPICKER_PID"
 
-        for sig in -1 -9; do
-            if ! timeoutpid "$TIMEOUT" "$HYPRPICKER_PID" "$sig"; then
-                Print "Warning: hyprpicker still running, sent signal $sig\n"
-            else
-                break
-            fi
-        done
+        if ! timeoutpid "$TIMEOUT" "$HYPRPICKER_PID" -1; then
+            Print "Warning: hyprpicker still running, sent signal -1\n"
+        fi
 
         unset HYPRPICKER_PID
     else # In case we messed up
