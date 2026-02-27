@@ -597,7 +597,7 @@ function unfreeze() {
         kill "$HYPRPICKER_PID"
 
         if ! timeoutpid "$TIMEOUT" "$HYPRPICKER_PID" -1; then
-            Print "Warning: hyprpicker still running, sent signal -1\n"
+            Print -W "hyprpicker still running, sent signal -1\n"
         fi
 
         unset HYPRPICKER_PID
@@ -630,13 +630,13 @@ function freeze() {
 function timeoutpid() { # Usage: timeoutpid <duration> <pid> [signal]
     duration="${1:?}"; pid="${2:?}"; signal="$3"
     rounds="$(($duration*$TIMEOUTPID_POLL_FREQ))"
-    Print -2 "timeoutpid: watching pid $pid for $duration s ($rounds polls)\n"
+    Print -D "timeoutpid: watching pid $pid for $duration s ($rounds polls)\n"
 
     i=0; while [ "$i" -lt "$rounds" ]; do i=$((i+1))
         kill -0 "$pid" 2>/dev/null || return 0 # Process died in time
         sleep "$TIMEOUTPID_POLL_STEP"
     done
-    Print -1 "timeoutpid: process $pid timed out, killing with '$signal'\n"
+    Print -I "timeoutpid: process $pid timed out, killing with '$signal'\n"
     kill $signal "$pid" 2>/dev/null
     return 124 # Time ran out. Same status used in the 'timeout' util.
 }
