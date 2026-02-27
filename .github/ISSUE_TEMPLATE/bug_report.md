@@ -22,8 +22,14 @@ Steps to reproduce the behavior:
 [If applicable, add screenshots to help explain your problem.]
 
 ## System info
- - **OS**: [e.g. Arch Linux]
- - **Hyprcap version** (`hyprcap -V`): [e.g. 1.2.0]
+
+**OS**: [e.g. Arch Linux]
+
+**Hyprcap and depedencies version** (`hyprcap -Vv`):
+
+```
+[Command output here]
+```
 
 ## Additional context
 [Add any other context about the problem here.]
