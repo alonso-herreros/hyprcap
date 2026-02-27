@@ -133,6 +133,29 @@ EOF
 
 function Version() {
     echo "HyprCap version $VERSION"
+
+    # If verbose not set, we're done
+    [ "$VERBOSE" -lt 1 ] && return 0
+
+    for cmd in \
+        hyprctl wf-recorder grim slurp jq \
+        wl-copy hyprpicker notify-send fuzzel
+    do
+        if command -v "$cmd" >/dev/null; then
+            case "$cmd" in
+                grim | slurp ) # Don't have a version flag
+                    echo "$cmd is present";;
+                wl-copy ) # Too much information
+                    $cmd --version | head -n 1;;
+                hyprctl ) # Version requested as subcommand
+                    $cmd version;;
+                *)
+                    $cmd --version;;
+            esac
+        else
+            echo "$cmd not found"
+        fi
+    done
 }
 
 function NYI() {
@@ -705,8 +728,8 @@ function args() {
                 VERBOSE=-1
                 ;;
             -V | --version)
-                Version
-                exit 0;;
+                COMMAND=version
+                ;;
             -h | --help)
                 Help
                 exit 0;;
@@ -717,6 +740,11 @@ function args() {
         shift
     done
     shift # Remove the command itself from the arguments
+
+    if [ "$COMMAND" == "version" ]; then
+        Version
+        exit 0
+    fi
 
     # -- Command --
     # Check if a command was specified
