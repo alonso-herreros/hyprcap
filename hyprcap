@@ -132,7 +132,7 @@ function Version() {
     [ "$VERBOSE" -lt 1 ] && return 0
 
     for cmd in \
-        wf-recorder grim slurp hyprctl jq \
+        hyprctl wf-recorder grim slurp jq \
         wl-copy hyprpicker notify-send fuzzel
     do
         if command -v "$cmd" >/dev/null; then
