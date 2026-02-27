@@ -10,7 +10,8 @@ LICENSE_FILE = LICENSE
 INSTALL_BIN_DIR     = $(DESTDIR)$(PREFIX)/bin
 INSTALL_LICENSE_DIR = $(DESTDIR)$(PREFIX)/share/licenses/$(PKGBASE)
 
-VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+HYPRCAP_VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null)
+HYPRCAP_VERSION ?= dev
 
 
 all: build
@@ -20,9 +21,10 @@ all: build
 	remove  remove-bin  remove-docs
 
 build: | $(BUILD_DIR)
-	@sed "s/^readonly VERSION=.*/readonly VERSION=\"$(VERSION)\"/" $(SOURCE_FILE) \
+	@sed "s/^readonly VERSION=.*/readonly VERSION=\"$(HYPRCAP_VERSION)\"/" \
+		$(SOURCE_FILE) \
 		> $(BUILD_DIR)/$(BIN_NAME)
-	@echo "Hyprcap version: $(VERSION)"
+	@echo "Hyprcap version: $(HYPRCAP_VERSION)"
 	chmod +x "$(BUILD_DIR)/$(BIN_NAME)"
 
 
