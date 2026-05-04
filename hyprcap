@@ -665,125 +665,7 @@ function timeoutpid() { # Usage: timeoutpid <duration> <pid> [signal]
 }
 
 
-# =============== Argument parsing ===============
-
-function args() {
-    local OPTS="s:wo:f:Fcd:znNaAt:rVqvh"
-    local LONG_OPTS="select:,"
-    LONG_OPTS+="write,output-dir:,filename:,no-file,filetype:,copy,"
-    LONG_OPTS+="delay:,freeze,"
-    LONG_OPTS+="notify,no-notify,actions,no-actions,notif-timeout:,"
-    LONG_OPTS+="raw,verbose,quiet,disable-title,version,help"
-
-    local options=$(getopt -o $OPTS --long $LONG_OPTS -- "$@")
-    eval set -- "$options"
-
-    while true; do
-        case "$1" in
-            -s | --select)
-                local selection="$2" # Parsing is done later
-                shift;;
-
-            -w | --write)
-                SAVE=1
-                ;;
-            -o | --output-dir)
-                SAVE=1
-                OUTPUT_DIR="$2"
-                shift;;
-            -f | --filename)
-                SAVE=1
-                FILENAME="$2"
-                shift;;
-            -W | --no-write | -F | --no-file)
-                SAVE=0
-                ;;
-            --filetype)
-                FILETYPE="$2"
-                shift;;
-            -c | --copy)
-                COPY=1
-                ;;
-
-            -d | --delay)
-                DELAY="$2"
-                shift;;
-            -z | --freeze)
-                FREEZE=1
-                ;;
-
-            -n | --notify)
-                NOTIFY=1
-                ;;
-            -N | --no-notify)
-                NOTIFY=0
-                ;;
-            -a | --actions)
-                ACTIONS=1
-                ;;
-            -A | --no-actions)
-                ACTIONS=0
-                ;;
-            -t | --notif-timeout)
-                NOTIF_TIMEOUT=$2
-                shift;;
-
-            -r | --raw)
-                RAW=1
-                ;;
-            --disable-title)
-                DISABLE_TITLE=1
-                ;;
-            -v | --verbose)
-                VERBOSE+=1
-                ;;
-            -q | --quiet)
-                VERBOSE=-1
-                ;;
-            -V | --version)
-                COMMAND=version
-                ;;
-            -h | --help)
-                Help
-                exit 0;;
-
-            --) # Marks the end of options
-                shift && break;;
-        esac
-        shift
-    done
-    shift # Remove the command itself from the arguments
-
-    if [ "$COMMAND" == "version" ]; then
-        Version
-        exit 0
-    fi
-
-    # -- Command --
-    # Check if a command was specified
-    if [ -z "$1" ]; then
-        Print -F "No command specified. Use --help for help.\n"
-        exit 1
-    fi
-    COMMAND=$(parse_command "$1")
-
-    # -- Selection --
-    # If a selection was not specified already and there is another argument,
-    # use it as the selection
-    [ -z "$selection" -a -n "$2" ] && selection="$2"
-
-    # Parse into a standard format
-    [ -n "$selection" ] && parse_selection "$selection"
-
-    # -- Check option compatibility --
-    case "$COMMAND" in rec*)
-        # Freeze is not compatible with recording
-        if [ $FREEZE -eq 1 ]; then
-            Print -E "Warning: Cannot freeze the screen while recording.\n"
-            FREEZE=0
-        fi
-    esac
-}
+# =============== Arg parsing helpers ============
 
 function parse_command() {
     case "$1" in
@@ -960,7 +842,119 @@ VERBOSE=0
 RAW=0
 
 # ---- Parse arguments ----
-args $0 "$@"
+OPTS="s:wo:f:Fcd:znNaAt:rVqvh"
+LONG_OPTS="select:,"
+LONG_OPTS+="write,output-dir:,filename:,no-file,filetype:,copy,"
+LONG_OPTS+="delay:,freeze,"
+LONG_OPTS+="notify,no-notify,actions,no-actions,notif-timeout:,"
+LONG_OPTS+="raw,verbose,quiet,disable-title,version,help"
+
+eval set -- "$(getopt -o $OPTS --long $LONG_OPTS -- "$@")"
+
+while true; do
+    case "$1" in
+        -s | --select)
+            local selection="$2" # Parsing is done later
+            shift;;
+
+        -w | --write)
+            SAVE=1
+            ;;
+        -o | --output-dir)
+            SAVE=1
+            OUTPUT_DIR="$2"
+            shift;;
+        -f | --filename)
+            SAVE=1
+            FILENAME="$2"
+            shift;;
+        -W | --no-write | -F | --no-file)
+            SAVE=0
+            ;;
+        --filetype)
+            FILETYPE="$2"
+            shift;;
+        -c | --copy)
+            COPY=1
+            ;;
+
+        -d | --delay)
+            DELAY="$2"
+            shift;;
+        -z | --freeze)
+            FREEZE=1
+            ;;
+
+        -n | --notify)
+            NOTIFY=1
+            ;;
+        -N | --no-notify)
+            NOTIFY=0
+            ;;
+        -a | --actions)
+            ACTIONS=1
+            ;;
+        -A | --no-actions)
+            ACTIONS=0
+            ;;
+        -t | --notif-timeout)
+            NOTIF_TIMEOUT=$2
+            shift;;
+
+        -r | --raw)
+            RAW=1
+            ;;
+        --disable-title)
+            DISABLE_TITLE=1
+            ;;
+        -v | --verbose)
+            VERBOSE+=1
+            ;;
+        -q | --quiet)
+            VERBOSE=-1
+            ;;
+        -V | --version)
+            COMMAND=version
+            ;;
+        -h | --help)
+            Help
+            exit 0;;
+
+        --) # Marks the end of options
+            shift && break;;
+    esac
+    shift
+done
+
+if [ "$COMMAND" == "version" ]; then
+    Version
+    exit 0
+fi
+
+# -- Command --
+# Check if a command was specified
+if [ -z "$1" ]; then
+    Print -F "No command specified. Use --help for help.\n"
+    exit 1
+fi
+COMMAND=$(parse_command "$1")
+
+# -- Selection --
+# If a selection was not specified already and there is another argument,
+# use it as the selection
+[ -z "$selection" -a -n "$2" ] && selection="$2"
+
+# Parse into a standard format
+[ -n "$selection" ] && parse_selection "$selection"
+
+# -- Check option compatibility --
+case "$COMMAND" in rec*)
+    # Freeze is not compatible with recording
+    if [ $FREEZE -eq 1 ]; then
+        Print -E "Warning: Cannot freeze the screen while recording.\n"
+        FREEZE=0
+    fi
+esac
 
 Print -I "Running HyprCap version $VERSION\n"
 Print -I "Command selected: $COMMAND\n"
