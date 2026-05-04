@@ -1,0 +1,162 @@
+.pc
+.TH HyprCap 1 "8 Apr 2026" "hyprcap dev"
+.SH NAME
+hyprcap - easily capture screenshots and screen recordings on
+.UR https://hyprland.org/
+Hyprland
+.UE
+\&.
+.SH SYNOPSIS
+.B hyprcap
+.RI [\| "options" \|]
+.I "command"
+.RB [\|[ \-s \|]
+.IR "selection" \|]
+.SH DESCRIPTION
+.B HyprCap
+is a utility to easily capture screenshots and screen recordings on Hyprland.
+
+It allows selecting windows, regions and monitors with your mouse, command line
+arguments, or an interactive
+.BR fuzzel (1)
+menu.
+.SH COMMANDS
+shot | screenshot            Take a screenshot
+rec | record                 Toggle screen recording
+rec\-start | record\-start     Start a screen recording
+rec\-stop | record\-stop       Stop a screen recording
+
+A selection can be specified after the command, with the \-s or \-\-selection
+option, or using a
+.BR fuzzel (1)
+menu if neither is specified.
+
+.SH SELECTION
+  monitor                   Select an entire monitor interactively.
+  monitor:active            Select the currently focused monitor.
+  monitor:<name>            Select the monitor with the exact given name
+
+  window                    Select a visible window interactively.
+  window:active             Select the currently focused window.
+  window:<title>            Select the first window that contains the title.
+
+  region                    Select a region manually using \[aq]slurp\[aq].
+  region:X,Y,WxH            Select the specified region.
+
+
+.SH OPTIONS
+.SS Selection options
+  \-s, \-\-select <selection>      Alternative way to specify the selection.
+
+.SS Saving options
+  \-w, \-\-write                   Save the capture to a file using the default
+                                filename and directory.
+  \-o, \-\-output\-dir <dir>        Directory in which to save captures.
+                                Default: $XDG_PICTURES_DIR/Screenshots or
+                                $XDG_VIDEOS_DIR/Captures
+  \-f, \-\-filename <filename>     The file name for the resulting capture within
+                                the output directory.
+                                Default:
+                                  YYYY\-MM\-DD\-hhmmss_hyprcap.<extension>
+                                where <extension> is determined by the command
+                                (e.g. png for screenshots, mp4 for recordings).
+  \-F, \-\-no\-file                 Don\[aq]t save captures to a file (default).
+  \-c, \-\-copy                    Copy capture to clipboard with \[aq]wl\-copy\[aq].
+
+.SS Capture options
+  \-d, \-\-delay <time>            How long to delay starting the capture after
+                                selection is done in seconds.
+  \-z, \-\-freeze                  Freeze the screen on initialization. Only
+                                available for screenshots.
+
+.SS Notification options
+  \-n, \-\-notify                  Send a notification when capture is done.
+                                (default).
+  \-N, \-\-no\-notify               Don\[aq]t send notifications.
+  \-a, \-\-actions                 Show actions in the notification (default).
+                                Requires \-\-notify.
+  \-A, \-\-no\-actions              Don\[aq]t show actions in the notification. Requires
+                                \-\-notify.
+  \-t, \-\-notif\-timeout <time>    Notification timeout in milliseconds. Requires
+                                \-\-notify
+                                Default: 10 seconds.
+
+.SS Output options
+  \-r, \-\-raw                     Output raw capture data to stdout.
+  \-v, \-\-verbose                 Print extra information. Specify multiple times
+                                to increase verbosity.
+  \-q, \-\-quiet                   Print less information.
+  \-\-disable\-title               Forcefully disable setting the terminal title.
+                                Useful if the terminal title setting code is
+                                causing issues, e.g. when running in a script.
+  \-V, \-\-version                 Show the version and exit.
+  \-h, \-\-help                    Show this help message and exit.
+
+.SH EXAMPLES
+  Toggle recording current monitor      \[ga]hyprcap rec monitor:active\[ga]
+  Screenshot a window (interactive)     \[ga]hyprcap shot window\[ga]
+  Toggle recording a specific region    \[ga]hyprcap rec region:100,100,400x300\[ga]
+  Stop an ongoing recording             \[ga]hyprcap rec\-stop\[ga]
+  Fall back to monitor capture when selection is cancelled
+        \[ga]hyprcap shot region || hyprcap shot monitor:active\[ga]
+
+.SS Configuration
+You can add the various modes as keybindings in your Hyprland config
+like so:
+.IP
+.EX
+\f[I]# \[ti]/.config/hypr/hyprland.conf\f[R]
+
+\&...
+
+\f[I]# Screenshot a region\f[R]
+bind = $MOD SHIFT, S,      exec, hyprcap shot region \-z \-c \-n
+\f[I]# Screenshot current window\f[R]
+bind = $MOD SHIFT ALT, S,  exec, hyprcap shot window:active \-z \-c \-n
+\f[I]# Screenshot with interactive selection\f[R]
+bind = $MOD SHIFT CTRL, S, exec, hyprcap shot \-z \-c \-n
+
+\f[I]# Toggle recording a region\f[R]
+bind = $MOD SHIFT, R,      exec, hyprcap rec region \-c \-n
+\f[I]# Toggle recording current window\f[R]
+bind = $MOD SHIFT ALT, R,  exec, hyprcap rec window:active \-c \-n
+\f[I]# Toggle recording with interactive selection\f[R]
+bind = $MOD SHIFT CTRL, R, exec, hyprcap rec \-c \-n
+.EE
+.SH NOTES
+.SS Save location
+The current capture is saved in the \f[CR]$XDG_CACHE_DIR/hyprcap\f[R]
+dir for internal use.
+
+You can save the captures by using the \f[CR]\-\-write\f[R]
+(\f[CR]\-w\f[R]) option.
+The \f[CR]\-\-out\-dir\f[R] (\f[CR]\-o\f[R]) and \f[CR]\-\-filename\f[R]
+(\f[CR]\-f\f[R]) options can be used to specify the output directory and
+filename, respectively.
+By default, captures are saved in the
+\f[CR]$XDG_PICTURES_DIR/Screenshots\f[R] directory for screenshots and
+\f[CR]$XDG_VIDEOS_DIR/Captures\f[R] for recordings.
+If those XDG directory variables are not set, the defaults are
+\f[CR]\[ti]/Pictures/Screenshots\f[R] and
+\f[CR]\[ti]/Videos/Captures\f[R], respectively.
+.SS Contributing
+Contributions are welcome!
+You can help by:
+.IP \[bu] 2
+Reporting bugs and issues on the \c
+.UR https://github.com/alonso-herreros/hyprcap/issues
+GitHub repository
+.UE \c
+.IP \[bu] 2
+Suggesting new features or improvements
+.IP \[bu] 2
+Submitting pull requests with fixes or new features
+.IP \[bu] 2
+Improving the documentation
+.IP \[bu] 2
+Testing the utility and providing feedback
+.SS Credit
+This project is based on \c
+.UR https://github.com/Gustash/Hyprshot
+Gustash\[cq]s Hyprshot
+.UE \c
