@@ -939,11 +939,12 @@ if [ -z "$1" ]; then
     exit 1
 fi
 COMMAND=$(parse_command "$1")
+shift # Clear command from current args
 
 # ~~~ Selection ~~~
 # If a selection was not specified already and there is another argument,
 # use it as the selection
-[ -z "$selection" -a -n "$2" ] && selection="$2"
+[ -z "$selection" -a -n "$1" ] && selection="$1" && shift
 
 # Parse into a standard format
 [ -n "$selection" ] && parse_selection "$selection"
