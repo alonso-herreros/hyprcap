@@ -926,12 +926,13 @@ while true; do
     shift
 done
 
+# ~~~ Very early exit commands ~~~
 if [ "$COMMAND" == "version" ]; then
     Version
     exit 0
 fi
 
-# -- Command --
+# ~~~ Command ~~~
 # Check if a command was specified
 if [ -z "$1" ]; then
     Print -F "No command specified. Use --help for help.\n"
@@ -939,7 +940,7 @@ if [ -z "$1" ]; then
 fi
 COMMAND=$(parse_command "$1")
 
-# -- Selection --
+# ~~~ Selection ~~~
 # If a selection was not specified already and there is another argument,
 # use it as the selection
 [ -z "$selection" -a -n "$2" ] && selection="$2"
@@ -947,7 +948,7 @@ COMMAND=$(parse_command "$1")
 # Parse into a standard format
 [ -n "$selection" ] && parse_selection "$selection"
 
-# -- Check option compatibility --
+# ~~~ Check option compatibility ~~~
 case "$COMMAND" in rec*)
     # Freeze is not compatible with recording
     if [ $FREEZE -eq 1 ]; then
@@ -955,6 +956,8 @@ case "$COMMAND" in rec*)
         FREEZE=0
     fi
 esac
+
+# ---- Post-args ----
 
 Print -I "Running HyprCap version $VERSION\n"
 Print -I "Command selected: $COMMAND\n"
