@@ -218,12 +218,14 @@ function check_cmd() {
 
 function screenshot() {
     Print -I "Making screenshot of $GEOMETRY\n"
+    Print -D "Additional arguments: $*\n"
 
-    grim -g "$GEOMETRY" -t "$FILETYPE" "$CAPTURE_PATH"
+    grim -g "$GEOMETRY" -t "$FILETYPE" "$@" "$CAPTURE_PATH"
 }
 
 function record_start() {
     Print -I "Starting screen recording of $GEOMETRY\n"
+    Print -D "Additional arguments: $*\n"
 
     if [ -r "$REC_PID_PATH" ]; then
         Print -E "Screen recording is already in progress.\n"
@@ -233,7 +235,7 @@ function record_start() {
     # We send this to the background so we can store its PID in a file.
     # Otherwise, we wouldn't be able to gracefully stop it from the outside.
     # Also, the filetype is determined by the filename ($CAPTURE_PATH).
-    wf-recorder -g "$GEOMETRY" -f "$CAPTURE_PATH" --overwrite --audio &
+    wf-recorder -g "$GEOMETRY" -f "$CAPTURE_PATH" --overwrite --audio "$@" &
     local rec_pid=$!
     echo "$rec_pid" > "$REC_PID_PATH"
 
