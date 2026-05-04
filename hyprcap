@@ -962,6 +962,7 @@ esac
 
 Print -I "Running HyprCap version $VERSION\n"
 Print -I "Command selected: $COMMAND\n"
+Print -D "Additional arguments: $*\n"
 
 solve_filetype
 solve_filenames
