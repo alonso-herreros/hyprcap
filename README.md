@@ -205,6 +205,15 @@ are not set, the defaults are `~/Pictures/Screenshots` and
 > The current capture is saved in the `$XDG_CACHE_DIR/hyprcap` dir for internal
 > use.
 
+## Troubleshooting
+
+Here are some common issues and their solutions:
+
+### Fuzzel exits on mouse move
+
+Try setting `exit-on-keyboard-focus-loss=no` in `fuzzel.ini`.
+
+
 ## Contributing
 
 Contributions are welcome! You can help by:
