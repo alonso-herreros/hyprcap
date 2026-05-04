@@ -4,35 +4,40 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+
+    # HyprCap source (NOT a flake itself)
+    hyprcap-src = {
+      url = "github:alonso-herreros/hyprcap";
+      flake = false;
+    };
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs = { self, nixpkgs, flake-utils, hyprcap-src }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
 
         hyprcap = pkgs.stdenv.mkDerivation {
           pname = "hyprcap";
-          version = "unstable";
+          version = hyprcap-src.shortRev or "dirty";
 
-          src = pkgs.fetchFromGitHub {
-            owner = "alonso-herreros";
-            repo = "hyprcap";
-            rev = "main";
-            hash = "sha256-qTlv4hRy9CvB+ZkNxXuxtLjDHsjiyjjooUlDFxwqQOc=";
-          };
+          src = hyprcap-src;
 
           nativeBuildInputs = [
             pkgs.makeWrapper
           ];
 
-          buildInputs = [ ];
+          # upstream build system
+          buildPhase = ''
+            runHook preBuild
+            make all
+            runHook postBuild
+          '';
 
           installPhase = ''
             runHook preInstall
 
-            mkdir -p $out/bin
-            install -Dm755 hyprcap $out/bin/hyprcap
+            make install PREFIX=$out
 
             wrapProgram $out/bin/hyprcap \
               --prefix PATH : ${pkgs.lib.makeBinPath [
@@ -51,19 +56,19 @@
           '';
 
           meta = with pkgs.lib; {
-            description = "Screenshot and screen recording utility for Hyprland";
+            description = "Screenshot and recording utility for Hyprland";
             homepage = "https://github.com/alonso-herreros/hyprcap";
             license = licenses.mit;
             platforms = platforms.linux;
+            mainProgram = "hyprcap";
           };
         };
+
       in {
         packages.default = hyprcap;
 
         devShells.default = pkgs.mkShell {
-          buildInputs = [
-            hyprcap
-          ];
+          packages = [ hyprcap ];
         };
       });
 }
