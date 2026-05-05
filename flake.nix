@@ -4,24 +4,18 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-
-    # HyprCap source (NOT a flake itself)
-    hyprcap-src = {
-      url = "github:alonso-herreros/hyprcap";
-      flake = false;
-    };
   };
 
-  outputs = { self, nixpkgs, flake-utils, hyprcap-src }:
+  outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
 
         hyprcap = pkgs.stdenv.mkDerivation {
           pname = "hyprcap";
-          version = hyprcap-src.shortRev or "dirty";
+          version = "latest";
 
-          src = hyprcap-src;
+          src = self;
 
           nativeBuildInputs = [
             pkgs.makeWrapper

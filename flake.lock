@@ -18,29 +18,13 @@
         "type": "github"
       }
     },
-    "hyprcap-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1772217595,
-        "narHash": "sha256-qTlv4hRy9CvB+ZkNxXuxtLjDHsjiyjjooUlDFxwqQOc=",
-        "owner": "alonso-herreros",
-        "repo": "hyprcap",
-        "rev": "b6f3087a6f0bf68f37b3031259e6887514499367",
-        "type": "github"
-      },
-      "original": {
-        "owner": "alonso-herreros",
-        "repo": "hyprcap",
-        "type": "github"
-      }
-    },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1777578337,
-        "narHash": "sha256-Ad49moKWeXtKBJNy2ebiTQUEgdLyvGmTeykAQ9xM+Z4=",
+        "lastModified": 1777954456,
+        "narHash": "sha256-hGdgeU2Nk87RAuZyYjyDjFL6LK7dAZN5RE9+hrDTkDU=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "15f4ee454b1dce334612fa6843b3e05cf546efab",
+        "rev": "549bd84d6279f9852cae6225e372cc67fb91a4c1",
         "type": "github"
       },
       "original": {
@@ -53,7 +37,6 @@
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
-        "hyprcap-src": "hyprcap-src",
         "nixpkgs": "nixpkgs"
       }
     },
