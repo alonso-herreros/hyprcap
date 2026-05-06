@@ -24,6 +24,54 @@ using an AUR helper like `yay`:
 yay -S hyprcap
 ```
 
+### Nix Flake
+
+HyprCap is distributed as a Nix flake. You can install or run it directly from the GitHub source.
+
+#### Prerequisites
+
+Nix with flakes enabled
+(set `experimental-features = nix-command flakes` in your Nix config)
+
+#### Install to your profile
+
+To install HyprCap into your user environment:
+
+```bash
+nix profile install github:alonso-herreros/hyprcap
+```
+
+#### Use in a flake
+
+You can add HyprCap as an input to your own flake:
+
+```nix
+{
+    inputs = {
+        hyprcap.url = "github:alonso-herreros/hyprcap";
+    };
+}
+```
+
+#### Using with Home Manager
+
+Add HyprCap to your Home Manager configuration:
+
+```nix
+{
+	inputs.hyprcap.url = "github:alonso-herreros/hyprcap";
+
+	outputs = { self, nixpkgs, home-manager, hyprcap, ... }: {
+		homeConfigurations.your-user = home-manager.lib.homeManagerConfiguration {
+			# ...
+			home.packages = [
+				hyprcap.packages.${pkgs.stdenv.hostPlatform.system}.default
+			];
+        };
+	};
+}
+```
+
 ### Manual installation
 
 #### Dependencies
