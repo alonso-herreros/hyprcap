@@ -21,6 +21,18 @@
             pkgs.makeWrapper
           ];
 
+          buildInputs = with pkgs; [
+            wf-recorder
+            grim
+            slurp
+            hyprland
+            jq
+            wl-clipboard
+            hyprpicker
+            libnotify
+            fuzzel
+          ];
+
           # upstream build system
           buildPhase = ''
             runHook preBuild
