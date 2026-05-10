@@ -79,7 +79,7 @@ You can get help on how to use HyprCap by running `hyprcap -h`:
 
 ```
 $ hyprcap -h
-Usage: hyprcap [options...] <command> [[-s] <selection>]
+Usage: hyprcap [options...] <command> [[-s] <selection>] [-- [capturer_args]]
 
 HyprCap is a utility to easily capture screenshots and screen recordings on
 Hyprland.
@@ -108,6 +108,9 @@ Selection:
   region                    Select a region manually using 'slurp'.
   region:X,Y,WxH            Select the specified region.
 
+  * Note: Any selection will be trimmed to a single monitor when recording due
+    to limitations in 'wf-recorder'
+
 
 Selection options:
   -s, --select <selection>      Alternative way to specify the selection.
@@ -115,16 +118,25 @@ Selection options:
 Saving options:
   -w, --write                   Save the capture to a file using the default
                                 filename and directory.
+  -W, --no-write                Don't save captures to a file (default).
+  -F, --no-file                 Same as `--no-write`
   -o, --output-dir <dir>        Directory in which to save captures.
                                 Default: $XDG_PICTURES_DIR/Screenshots or
                                 $XDG_VIDEOS_DIR/Captures
   -f, --filename <filename>     The file name for the resulting capture within
-                                the output directory.
+                                the output directory. The file extension
+                                (everything after the last dot) is used to
+                                determine the file type, unless overridden with
+                                `--filetype`.
                                 Default:
                                   YYYY-MM-DD-hhmmss_hyprcap.<extension>
                                 where <extension> is determined by the command
-                                (e.g. png for screenshots, mp4 for recordings).
-  -F, --no-file                 Don't save captures to a file (default).
+                                (see the `--filetype` defaults).
+      --filetype <type>         Force a file type for the capture. For
+                                supported types, see the documentation for grim
+                                and wf-recorder.
+                                Defaults: png for screenshots, mp4 for
+                                recordings.
   -c, --copy                    Copy capture to clipboard with 'wl-copy'.
 
 Capture options:
@@ -143,7 +155,8 @@ Notification options:
                                 --notify.
   -t, --notif-timeout <time>    Notification timeout in milliseconds. Requires
                                 --notify
-                                Default: 10 seconds.
+                                Default: unspecified, up to your notification
+                                daemon's config
 
 Output options:
   -r, --raw                     Output raw capture data to stdout.
@@ -156,6 +169,11 @@ Output options:
   -V, --version                 Show the version and exit.
   -h, --help                    Show this help message and exit.
 
+Capturer arguments:
+  Any arguments passed after a double dash ('--') will be passed directly to
+  the capture program: 'grim' in the case of screenshots, or 'wf-recorder' in
+  the case of recordings.
+
 Examples:
   Toggle recording current monitor      `hyprcap rec monitor:active`
   Screenshot a window (interactive)     `hyprcap shot window`
@@ -163,7 +181,6 @@ Examples:
   Stop an ongoing recording             `hyprcap rec-stop`
   Fall back to monitor capture when selection is cancelled
         `hyprcap shot region || hyprcap shot monitor:active`
-
 ```
 
 ## Configuration
