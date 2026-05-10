@@ -31,7 +31,7 @@ readonly TIMEOUTPID_POLL_STEP=0.1 # Shell scripts aren't great at math
 
 function Help() {
     cat <<EOF
-Usage: hyprcap [options...] <command> [[-s] <selection>]
+Usage: hyprcap [options...] <command> [[-s] <selection>] [-- [capturer_args]]
 
 HyprCap is a utility to easily capture screenshots and screen recordings on
 Hyprland.
@@ -120,6 +120,11 @@ Output options:
                                 causing issues, e.g. when running in a script.
   -V, --version                 Show the version and exit.
   -h, --help                    Show this help message and exit.
+
+Capturer arguments:
+  Any arguments passed after a double dash ('--') will be passed directly to
+  the capture program: 'grim' in the case of screenshots, or 'wf-recorder' in
+  the case of recordings.
 
 Examples:
   Toggle recording current monitor      \`hyprcap rec monitor:active\`
