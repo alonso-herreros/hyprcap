@@ -1,27 +1,85 @@
 {
   description = "HyprCap - Hyprland screenshot and recording utility";
 
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
-  };
+  inputs.nixpkgs.url = "https://channels.nixos.org/nixos-unstable/nixexprs.tar.xz";
 
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = import nixpkgs { inherit system; };
+  outputs =
+    { self, nixpkgs }:
+    let
+      eachSystem = nixpkgs.lib.genAttrs [
+        "x86_64-linux"
+        "aarch64-linux"
+        "aarch64-darwin"
+      ];
+    in
+    {
+      packages = eachSystem (
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in
+        {
+          hyprcap = pkgs.callPackage (
+            {
+              lib,
+              stdenv,
+              makeBinaryWrapper,
+              wf-recorder,
+              grim,
+              slurp,
+              hyprland,
+              jq,
+              wl-clipboard,
+              hyprpicker,
+              libnotify,
+              fuzzel,
+            }:
+            stdenv.mkDerivation {
+              pname = "hyprcap";
+              version = self.shortRev or "dirty";
 
-        hyprcap = pkgs.stdenv.mkDerivation {
-          pname = "hyprcap";
-          version = "latest";
+              src = lib.cleanSource ./.;
 
-          src = self;
+              makeFlags = [ "PREFIX=${placeholder "out"}" ];
 
-          nativeBuildInputs = [
-            pkgs.makeWrapper
-          ];
+              nativeBuildInputs = [ makeBinaryWrapper ];
 
-          buildInputs = with pkgs; [
+              postBuild = ''
+                wrapProgram $out/bin/hyprcap \
+                  --prefix "PATH" ":" "${
+                    lib.makeBinPath [
+                      wf-recorder
+                      grim
+                      slurp
+                      hyprland
+                      jq
+                      wl-clipboard
+                      hyprpicker
+                      libnotify
+                      fuzzel
+                    ]
+                  }"
+              '';
+              meta = {
+                description = "Screenshot and recording utility for Hyprland";
+                homepage = "https://github.com/alonso-herreros/hyprcap";
+                license = lib.licenses.mit;
+                platforms = lib.platforms.linux;
+                mainProgram = "hyprcap";
+              };
+            }
+          ) { };
+          default = self.packages.${system}.hyprcap;
+        }
+      );
+      devShells = eachSystem (
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in
+        pkgs.mkShell {
+          inputsFrom = [ self.packages.${system}.hyprcap ];
+          packages = with pkgs; [
             wf-recorder
             grim
             slurp
@@ -32,49 +90,7 @@
             libnotify
             fuzzel
           ];
-
-          # upstream build system
-          buildPhase = ''
-            runHook preBuild
-            make all
-            runHook postBuild
-          '';
-
-          installPhase = ''
-            runHook preInstall
-
-            make install PREFIX=$out
-
-            wrapProgram $out/bin/hyprcap \
-              --prefix PATH : ${pkgs.lib.makeBinPath [
-                pkgs.wf-recorder
-                pkgs.grim
-                pkgs.slurp
-                pkgs.hyprland
-                pkgs.jq
-                pkgs.wl-clipboard
-                pkgs.hyprpicker
-                pkgs.libnotify
-                pkgs.fuzzel
-              ]}
-
-            runHook postInstall
-          '';
-
-          meta = with pkgs.lib; {
-            description = "Screenshot and recording utility for Hyprland";
-            homepage = "https://github.com/alonso-herreros/hyprcap";
-            license = licenses.mit;
-            platforms = platforms.linux;
-            mainProgram = "hyprcap";
-          };
-        };
-
-      in {
-        packages.default = hyprcap;
-
-        devShells.default = pkgs.mkShell {
-          packages = [ hyprcap ];
-        };
-      });
+        }
+      );
+    };
 }
