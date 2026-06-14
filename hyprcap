@@ -671,6 +671,27 @@ function timeoutpid() { # Usage: timeoutpid <duration> <pid> [signal]
     return 124 # Time ran out. Same status used in the 'timeout' util.
 }
 
+# --------------- Hiding cursor ----------
+
+function hide_cursor() {
+    HDIE_CURSOR=1
+    Print -I "Hiding cursor\n"
+
+    CURSOR_POS=$(hyprctl cursorpos)
+    hyprctl dispatch movecursor 99999 99999 >/dev/null
+}
+
+function unhide_cursor() {
+    Print -I "Unhiding cursor\n"
+
+    if [ -z "$CURSOR_POS" ]; then
+        Print -E "Cursor not hidden or saved position couldn't be found.\n"
+        return 1
+    fi
+
+    hyprctl dispatch movecursor ${CURSOR_POS//, / } >/dev/null
+}
+
 
 # =============== Arg parsing helpers ============
 
