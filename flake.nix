@@ -44,7 +44,7 @@
 
               nativeBuildInputs = [ makeBinaryWrapper ];
 
-              postBuild = ''
+              postInstall = ''
                 wrapProgram $out/bin/hyprcap \
                   --prefix "PATH" ":" "${
                     lib.makeBinPath [
