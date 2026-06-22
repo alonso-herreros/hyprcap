@@ -861,7 +861,7 @@ eval set -- "$(getopt -o $OPTS --long $LONG_OPTS -- "$@")"
 while true; do
     case "$1" in
         -s | --select)
-            local selection="$2" # Parsing is done later
+            selection_raw="$2" # Parsing is done later
             shift;;
 
         -w | --write)
@@ -951,10 +951,10 @@ shift # Clear command from current args
 # ~~~ Selection ~~~
 # If a selection was not specified already and there is another argument,
 # use it as the selection
-[ -z "$selection" -a -n "$1" ] && selection="$1" && shift
+[ -z "$selection_raw" -a -n "$1" ] && selection_raw="$1" && shift
 
 # Parse into a standard format
-[ -n "$selection" ] && parse_selection "$selection"
+[ -n "$selection_raw" ] && parse_selection "$selection_raw"
 
 # ~~~ Check option compatibility ~~~
 case "$COMMAND" in rec*)
