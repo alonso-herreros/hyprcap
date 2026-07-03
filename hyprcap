@@ -605,13 +605,10 @@ function save_capture() {
 function copy_capture() {
     COPY=1 # In case it was called for other reasons
 
-    Print -I "Copying capture to clipboard\n"
+    Print -I "Copying capture to clipboard (saved at '$CAPTURE_COPY_PATH')\n"
 
-    if [ "$COMMAND" == "screenshot" ]; then
-        wl-copy --type image/png < "$CAPTURE_PATH"
-    elif [ "$COMMAND" == "record" ]; then
-        NYI && Exit 1 # TODO: Remove when implemented
-    fi
+    cp -f "$CAPTURE_PATH" "$CAPTURE_COPY_PATH"
+    wl-copy --type 'text/uri-list' "file://$CAPTURE_COPY_PATH"
 }
 
 # function edit_capture() {
@@ -977,6 +974,7 @@ solve_dirs
 
 SAVE_PATH="$OUTPUT_DIR/$FILENAME"
 CAPTURE_PATH="$CACHE_DIR/$CAPTURE_FILENAME"
+CAPTURE_COPY_PATH="$CACHE_DIR/copy-$CAPTURE_FILENAME"
 
 # ---- Early exit commands ----
 if [ "$COMMAND" = "record-stop" ]; then
