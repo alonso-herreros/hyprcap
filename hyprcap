@@ -537,9 +537,9 @@ function trim_to_monitor() {
 # --------------- Notifications --------------
 
 readonly ACTIONS_ARGS=(
-    "-A" "default='Save to file'"
-    "-A" "copy='Copy to clipboard'"
-    "-A" "edit='Edit'"
+    "-A" "default=Save to file"
+    "-A" "copy=Copy to clipboard"
+    "-A" "edit=Edit"
 )
 function notify() {
     NOTIFY=1 # In case it was called for other reasons???
