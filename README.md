@@ -47,9 +47,13 @@ You can add HyprCap as an input to your own flake:
 
 ```nix
 {
-    inputs = {
-        hyprcap.url = "github:alonso-herreros/hyprcap";
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    hyprcap = {
+      url = "github:alonso-herreros/hyprcap";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
+  };
 }
 ```
 
@@ -59,16 +63,22 @@ Add HyprCap to your Home Manager configuration:
 
 ```nix
 {
-	inputs.hyprcap.url = "github:alonso-herreros/hyprcap";
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    hyprcap = {
+      url = "github:alonso-herreros/hyprcap";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
 
-	outputs = { self, nixpkgs, home-manager, hyprcap, ... }: {
-		homeConfigurations.your-user = home-manager.lib.homeManagerConfiguration {
-			# ...
-			home.packages = [
-				hyprcap.packages.${pkgs.stdenv.hostPlatform.system}.default
-			];
-        };
-	};
+  outputs =
+    { home-manager, hyprcap, ... }:
+    {
+      homeConfigurations.your-user = home-manager.lib.homeManagerConfiguration {
+        # ...
+        home.packages = [ hyprcap.packages.${pkgs.stdenv.hostPlatform.system}.default ];
+      };
+    };
 }
 ```
 
