@@ -72,7 +72,10 @@ Add HyprCap to your Home Manager configuration:
   };
 
   outputs =
-    { home-manager, hyprcap, ... }:
+    { nixpkgs, home-manager, hyprcap, ... }:
+    let
+      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+    in
     {
       homeConfigurations.your-user = home-manager.lib.homeManagerConfiguration {
         # ...
