@@ -64,7 +64,8 @@ Add HyprCap to your Home Manager configuration:
 ```nix
 {
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable"; # or your preferred nixpkgs source URL
+    # ...
     hyprcap = {
       url = "github:alonso-herreros/hyprcap";
       inputs.nixpkgs.follows = "nixpkgs";
