@@ -249,6 +249,35 @@ Examples:
 
 You can add the various modes as keybindings in your Hyprland config like so:
 
+```lua
+-- ~/.config/hypr/hyprland.lua
+
+...
+
+-- Screenshot a region
+hl.bind(MOD .. ' + SHIFT + S', hl.dsp.exec_cmd('hyprcap shot region -z -c -n'))
+-- Screenshot current window
+hl.bind(MOD .. ' + SHIFT + ALT + S', hl.dsp.exec_cmd('hyprcap shot window:active -z -c -n'))
+-- Screenshot with interactive selection
+hl.bind(MOD .. ' + SHIFT + CTRL + S', hl.dsp.exec_cmd('hyprcap shot -z -c -n'))
+
+-- Toggle recording a region
+hl.bind(MOD .. ' + SHIFT + R', hl.dsp.exec_cmd('hyprcap rec region -c -n'))
+-- Toggle recording current window
+hl.bind(MOD .. ' + SHIFT + ALT + R', hl.dsp.exec_cmd('hyprcap rec window:active -c -n'))
+-- Toggle recording with interactive selection
+hl.bind(MOD .. ' + SHIFT + CTRL + R', hl.dsp.exec_cmd('hyprcap rec -c -n'))
+```
+
+<details>
+<summary>If you're still using the old <code>conf</code> syntax</summary>
+
+
+> :warning: **Warning**
+> 
+> Please migrate to the `Lua` syntax as soon as possible — the `conf` syntax will soon be unsupported.
+
+
 ```ini
 # ~/.config/hypr/hyprland.conf
 
@@ -268,6 +297,7 @@ bind = $MOD SHIFT ALT, R,  exec, hyprcap rec window:active -c -n
 # Toggle recording with interactive selection
 bind = $MOD SHIFT CTRL, R, exec, hyprcap rec -c -n
 ```
+</details>
 
 ### Save location
 
