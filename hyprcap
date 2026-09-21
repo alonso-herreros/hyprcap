@@ -608,7 +608,14 @@ function copy_capture() {
     Print -I "Copying capture to clipboard (saved at '$CAPTURE_COPY_PATH')\n"
 
     cp -f "$CAPTURE_PATH" "$CAPTURE_COPY_PATH"
-    wl-copy --type 'text/uri-list' "file://$CAPTURE_COPY_PATH"
+	case "$COMMAND" in
+		"record"*)
+			wl-copy --type 'text/uri-list' "file://$CAPTURE_COPY_PATH"
+			;;
+		"screenshot")
+			wl-copy <$CAPTURE_COPY_PATH
+			;;
+	esac
 }
 
 # function edit_capture() {
