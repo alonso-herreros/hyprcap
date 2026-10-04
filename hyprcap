@@ -101,9 +101,11 @@ Screenshot-only options:
 Recording-only options:
       --audio <device(s)>       Select PulseAudio devices to capture, by name.
                                 Special values:
+                                    - 'auto' lets wf-recorder decide (default)
                                     - 'desktop' resolves to '@DEFAULT_MONITOR@'
                                     - 'mic' resolves to '@DEFAULT_SOURCE@'
-      --no-audio                Disable audio capture.
+                                    - 'none' disables audio capture
+      --no-audio                Disable audio capture (same as '--audio none').
 
 Notification options:
   -n, --notify                  Send a notification when capture is done.
@@ -825,9 +827,10 @@ function solve_dirs() {
 
 function solve_audio() {
     case "$AUDIO" in
+        auto )    AUDIO="--audio";;
         mic )     AUDIO="--audio=@DEFAULT_SOURCE@";;
         desktop ) AUDIO="--audio=@DEFAULT_MONITOR@";;
-        --audio* ) ;;
+        none )    AUDIO= ;;
         ?* ) AUDIO="--audio=$AUDIO";;
     esac
     Print -D "Solved audio options: '$AUDIO'\n"
@@ -859,7 +862,7 @@ COPY=0
 # Behavior
 FREEZE=0
 DELAY= # Empty by default. Not the same as explicit 0.
-AUDIO=--audio # Default to preserve original behavior
+AUDIO=auto # Default to preserve original behavior
 DISABLE_TITLE=0 # Disable terminal title setting
 
 # Notifications
@@ -918,7 +921,7 @@ while true; do
             AUDIO="$2"
             shift;;
         --no-audio)
-            AUDIO=
+            AUDIO=none
             ;;
 
         -n | --notify)
