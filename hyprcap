@@ -94,12 +94,16 @@ Saving options:
 Capture options:
   -d, --delay <time>            How long to delay starting the capture after
                                 selection is done in seconds.
-  -z, --freeze                  Freeze the screen on initialization. Only
-                                available for screenshots.
-      --audio <source(s)>       Select audio sources to capture. Only
-                                applicable for recordings.
-      --no-audio                Disable audio capture. Only applicable to
-                                recordings.
+
+Screenshot-only options:
+  -z, --freeze                  Freeze the screen on initialization.
+
+Recording-only options:
+      --audio <device(s)>       Select PulseAudio devices to capture, by name.
+                                Special values:
+                                    - 'desktop' resolves to '@DEFAULT_MONITOR@'
+                                    - 'mic' resolves to '@DEFAULT_SOURCE@'
+      --no-audio                Disable audio capture.
 
 Notification options:
   -n, --notify                  Send a notification when capture is done.
