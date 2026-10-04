@@ -94,8 +94,19 @@ Saving options:
 Capture options:
   -d, --delay <time>            How long to delay starting the capture after
                                 selection is done in seconds.
-  -z, --freeze                  Freeze the screen on initialization. Only
-                                available for screenshots.
+
+Screenshot-only options:
+  -z, --freeze                  Freeze the screen on initialization.
+
+Recording-only options:
+      --audio <device(s)>       Select PulseAudio devices to capture, by name.
+                                Special values:
+                                    - 'auto' lets wf-recorder decide (default)
+                                    - 'desktop' resolves to '@DEFAULT_MONITOR@'
+                                    - 'mic' resolves to '@DEFAULT_SOURCE@'
+                                    - 'combine' combines 'destop' and 'mic'
+                                    - 'none' disables audio capture
+      --no-audio                Disable audio capture (same as '--audio none').
 
 Notification options:
   -n, --notify                  Send a notification when capture is done.
@@ -237,10 +248,26 @@ function record_start() {
         return 1
     fi
 
+    # Create combined PulseAudio combine?
+    case "$AUDIO" in *=combine.monitor )
+        Print -I "Creating PulseAudio combine device.\n"
+        id_combine="$(pactl load-module module-null-sink sink_name=combine)"
+        id_lo_desktop="$(
+            pactl load-module module-loopback \
+                source=$(pactl get-default-sink).monitor \
+                sink=combine latency_msec=1
+            )"
+        id_lo_mic="$(
+            pactl load-module module-loopback \
+                source=$(pactl get-default-source) \
+                sink=combine latency_msec=1
+            )"
+    esac
+
     # We send this to the background so we can store its PID in a file.
     # Otherwise, we wouldn't be able to gracefully stop it from the outside.
     # Also, the filetype is determined by the filename ($CAPTURE_PATH).
-    wf-recorder -g "$GEOMETRY" -f "$CAPTURE_PATH" --overwrite --audio "$@" &
+    wf-recorder -g "$GEOMETRY" -f "$CAPTURE_PATH" --overwrite "$AUDIO" "$@" &
     local rec_pid=$!
     echo "$rec_pid" > "$REC_PID_PATH"
 
@@ -259,9 +286,17 @@ function record_start() {
     # Wait for al subprocesses to finish too, otherwise we may find
     # incomplete files.
     wait
-
     # Once wf-recorder exits, we can remove the PID file
     rm "$REC_PID_PATH" 2>/dev/null
+
+    # Tear down PulseAudio combine?
+    case "$AUDIO" in *=combine.monitor )
+        Print -I "Tearing down PulseAudio combine device.\n"
+        pactl unload-module "$id_combine"
+        pactl unload-module "$id_lo_mic"
+        pactl unload-module "$id_lo_desktop"
+    esac
+
     # And return the exit code from the recording command unless it's
     # 130 (SIGINT), which is expected.
     [ $exit_code -eq 130 ] || return $exit_code
@@ -815,6 +850,18 @@ function solve_dirs() {
     Print -D "Solved save dir: '$OUTPUT_DIR'\n"
 }
 
+function solve_audio() {
+    case "$AUDIO" in
+        auto )    AUDIO="--audio";;
+        mic )     AUDIO="--audio=@DEFAULT_SOURCE@";;
+        desktop ) AUDIO="--audio=@DEFAULT_MONITOR@";;
+        combine ) AUDIO="--audio=combine.monitor";;
+        none )    AUDIO= ;;
+        ?* ) AUDIO="--audio=$AUDIO";;
+    esac
+    Print -D "Solved audio options: '$AUDIO'\n"
+}
+
 # =============== Main flow ===============
 
 # ---- Pre-init ----
@@ -841,6 +888,7 @@ COPY=0
 # Behavior
 FREEZE=0
 DELAY= # Empty by default. Not the same as explicit 0.
+AUDIO=auto # Default to preserve original behavior
 DISABLE_TITLE=0 # Disable terminal title setting
 
 # Notifications
@@ -856,7 +904,7 @@ RAW=0
 OPTS="s:wo:f:Fcd:znNaAt:rVqvh"
 LONG_OPTS="select:,"
 LONG_OPTS+="write,output-dir:,filename:,no-file,filetype:,copy,"
-LONG_OPTS+="delay:,freeze,"
+LONG_OPTS+="delay:,freeze,audio:,no-audio,"
 LONG_OPTS+="notify,no-notify,actions,no-actions,notif-timeout:,"
 LONG_OPTS+="raw,verbose,quiet,disable-title,version,help"
 
@@ -894,6 +942,12 @@ while true; do
             shift;;
         -z | --freeze)
             FREEZE=1
+            ;;
+        --audio)
+            AUDIO="$2"
+            shift;;
+        --no-audio)
+            AUDIO=none
             ;;
 
         -n | --notify)
@@ -961,12 +1015,19 @@ shift # Clear command from current args
 [ -n "$selection_raw" ] && parse_selection "$selection_raw"
 
 # ~~~ Check option compatibility ~~~
-case "$COMMAND" in rec*)
-    # Freeze is not compatible with recording
-    if [ $FREEZE -eq 1 ]; then
-        Print -E "Warning: Cannot freeze the screen while recording.\n"
-        FREEZE=0
-    fi
+case "$COMMAND" in
+    rec*)
+        # Freeze is not compatible with recording
+        if [ $FREEZE -eq 1 ]; then
+            Print -E "Warning: Cannot freeze the screen while recording.\n"
+            FREEZE=0
+        fi
+        ;;
+    screenshot )
+        if [ -n "$AUDIO" ]; then
+            Print -E "Warning: '--audio' option not applicable to screenshots.\n"
+        fi
+        ;;
 esac
 
 # ---- Post-args ----
@@ -978,6 +1039,7 @@ Print -D "Additional arguments: $*\n"
 solve_filetype
 solve_filenames
 solve_dirs
+solve_audio
 
 SAVE_PATH="$OUTPUT_DIR/$FILENAME"
 CAPTURE_PATH="$CACHE_DIR/$CAPTURE_FILENAME"
