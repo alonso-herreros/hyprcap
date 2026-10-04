@@ -298,33 +298,19 @@ function get_geometry() {
     local geometry=
 
     case $SELECTION in
-        region)
-            geometry=$(grab_region)
-            geometry=$(trim_slurp_border "$geometry")
-            ;;
+        region) trim_slurp_border "$(grab_region)";;
         monitor)
-            if [ $SELECT_ACTIVE -eq 1 ]; then
-                geometry=$(grab_monitor_active)
-            elif [ -n "$SELECT_MATCH" ]; then
-                geometry=$(grab_monitor_match $SELECT_MATCH)
-            else
-                geometry=$(grab_monitor)
-            fi
-            ;;
+            if [ $SELECT_ACTIVE -eq 1 ]; then grab_monitor_active
+            elif [ -n "$SELECT_MATCH" ]; then grab_monitor_match $SELECT_MATCH
+            else grab_monitor
+            fi ;;
         window)
-            if [ $SELECT_ACTIVE -eq 1 ]; then
-                geometry=$(grab_window_active)
-            elif [ -n "$SELECT_MATCH" ]; then
-                geometry=$(grab_window_match "$SELECT_MATCH")
-            else
-                geometry=$(grab_window)
-            fi
-            ;;
-        *)
-            geometry="$SELECTION"
-            ;;
+            if [ $SELECT_ACTIVE -eq 1 ]; then grab_window_active
+            elif [ -n "$SELECT_MATCH" ]; then grab_window_match "$SELECT_MATCH"
+            else grab_window
+            fi ;;
+        *) echo "$SELECTION";;
     esac
-    echo "$geometry"
 }
 
 function grab_region() {
@@ -547,7 +533,7 @@ function notify() {
     local title=""
     case "$COMMAND" in
         screenshot) title="Screenshot captured" ;;
-        record) title="Screen recording captured" ;;
+        record)     title="Screen recording captured" ;;
     esac
 
     local message=""
@@ -753,18 +739,9 @@ function prompt_selection() {
         ;;
     esac
     case "$option_name" in
-        *[Mm]onitor)
-            SELECTION=monitor
-            ;;
-        *[Ww]indow)
-            SELECTION=window
-            ;;
-        Region)
-            SELECTION=region
-            ;;
-        # *)
-        #     parse_mode "$option_name"
-        #     ;;
+        *[Mm]onitor) SELECTION=monitor ;;
+        *[Ww]indow)  SELECTION=window ;;
+        Region)      SELECTION=region ;;
     esac
     sleep 0.1; # Because sometimes it takes just a moment to fade out
 }
@@ -864,75 +841,32 @@ eval set -- "$(getopt -o $OPTS --long $LONG_OPTS -- "$@")"
 
 while true; do
     case "$1" in
-        -s | --select)
-            selection_raw="$2" # Parsing is done later
-            shift;;
+        -s | --select) selection_raw="$2"; shift;; # Parsing is done later
 
-        -w | --write)
-            SAVE=1
-            ;;
-        -o | --output-dir)
-            SAVE=1
-            OUTPUT_DIR="$2"
-            shift;;
-        -f | --filename)
-            SAVE=1
-            FILENAME="$2"
-            shift;;
-        -W | --no-write | -F | --no-file)
-            SAVE=0
-            ;;
-        --filetype)
-            FILETYPE="$2"
-            shift;;
-        -c | --copy)
-            COPY=1
-            ;;
+        -w | --write)      SAVE=1 ;;
+        -o | --output-dir) SAVE=1; OUTPUT_DIR="$2"; shift;;
+        -f | --filename)   SAVE=1; FILENAME="$2"; shift;;
+        -W | --no-write | -F | --no-file) SAVE=0 ;;
+        --filetype) FILETYPE="$2"; shift;;
+        -c | --copy) COPY=1 ;;
 
-        -d | --delay)
-            DELAY="$2"
-            shift;;
-        -z | --freeze)
-            FREEZE=1
-            ;;
+        -d | --delay)  DELAY="$2"; shift;;
+        -z | --freeze) FREEZE=1 ;;
 
-        -n | --notify)
-            NOTIFY=1
-            ;;
-        -N | --no-notify)
-            NOTIFY=0
-            ;;
-        -a | --actions)
-            ACTIONS=1
-            ;;
-        -A | --no-actions)
-            ACTIONS=0
-            ;;
-        -t | --notif-timeout)
-            NOTIF_TIMEOUT=$2
-            shift;;
+        -n | --notify)    NOTIFY=1 ;;
+        -N | --no-notify) NOTIFY=0 ;;
+        -a | --actions)    ACTIONS=1 ;;
+        -A | --no-actions) ACTIONS=0 ;;
+        -t | --notif-timeout) NOTIF_TIMEOUT=$2; shift;;
 
-        -r | --raw)
-            RAW=1
-            ;;
-        --disable-title)
-            DISABLE_TITLE=1
-            ;;
-        -v | --verbose)
-            VERBOSE+=1
-            ;;
-        -q | --quiet)
-            VERBOSE=-1
-            ;;
-        -V | --version)
-            COMMAND=version
-            ;;
-        -h | --help)
-            Help
-            exit 0;;
+        -r | --raw) RAW=1 ;;
+        --disable-title) DISABLE_TITLE=1 ;;
+        -v | --verbose) VERBOSE+=1 ;;
+        -q | --quiet)   VERBOSE=-1 ;;
+        -V | --version) COMMAND=version ;;
+        -h | --help) Help; exit 0;;
 
-        --) # Marks the end of options
-            shift && break;;
+        --) shift && break;; # Marks the end of options
     esac
     shift
 done
